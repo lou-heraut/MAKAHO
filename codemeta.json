@@ -150,7 +150,7 @@
     "programmingLanguage": "R 4.x.x",
     "softwareRequirements": [
         "https://github.com/lou-heraut/EXstat",
-        "https://github.com/lou-heraut/CARD"
+        "https://github.com/lou-heraut/CARD-R"
     ],
     "version": "1.0.0",
     "developmentStatus": "inactive"

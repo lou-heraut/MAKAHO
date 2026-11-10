@@ -9,7 +9,7 @@
 
 [MAKAHO](https://makaho.sk8.inrae.fr/) stands for MAnn-Kendall Analysis of Hydrological Observations.
 
-It is a [R Shiny](https://shiny.rstudio.com/) website based on [EXstat](https://github.com/lou-heraut/EXstat) package with [CARD](https://github.com/lou-heraut/CARD) code bundle. It provides an interactive cartographic solution to analyze the hydrological stationarity of French surface flows based on the data of the hydrometric stations where the flows are little influenced by the human actions.
+It is a [R Shiny](https://shiny.rstudio.com/) website based on [EXstat](https://github.com/lou-heraut/EXstat) package with [CARD](https://github.com/lou-heraut/CARD-R) code bundle. It provides an interactive cartographic solution to analyze the hydrological stationarity of French surface flows based on the data of the hydrometric stations where the flows are little influenced by the human actions.
 
 [<img src="https://github.com/lou-heraut/MAKAHO/blob/2f1ea7fab7c867041d707cee1bd68d5c3b3bfd04/www/screen.png" width="600">](https://makaho.sk8.inrae.fr/)
 
