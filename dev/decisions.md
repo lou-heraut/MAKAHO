@@ -136,6 +136,12 @@ le 2026-11-10.
 - **L'anglais n'est pas traité.** Le dictionnaire de l'application R
   existe à 225 entrées et card-api est bilingue de bout en bout : le
   jour où la question se pose, la matière est là.
+- **Abandonné pour la 2.0.0, en connaissance de cause** (2026-11-10,
+  voulu par l'utilisateur) : l'aide guidée en page d'accueil, qui gêne
+  plus qu'elle n'aide (l'aide passe à côté, M7) ; le mode capture
+  d'écran, que remplace un vrai export de cartes (M6) ; les trois
+  thèmes de fond de carte ; les fiches PDF par station, à refaire plus
+  tard en chaîne automatisée (M9).
 
 ## Ce que l'audit du 2026-09-18 a de faux
 

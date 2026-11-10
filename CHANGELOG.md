@@ -29,6 +29,11 @@ Chaque entrée dit ce qui a changé et renvoie au document qui l'explique.
 
 ### Documentation
 
+- **Les objectifs de la 2.0.0 (2026-11-10)**, en tête de `ROADMAP.md` :
+  pour qui, droit au but sur le modèle d'earth.nullschool.net, export de
+  données et de cartes, résumé statistique court. Les chantiers M2, M3,
+  M6, M7 et M9 suivent ; ce qui est abandonné est dans
+  `dev/decisions.md` (hors périmètre).
 - **Dépôt, hébergement et version R figée (2026-11-10).** Décisions 7
   à 9 de `dev/decisions.md` : un seul dépôt `lou-heraut/MAKAHO`, la
   réécriture sur une branche `main` à l'histoire neuve, une VM à la

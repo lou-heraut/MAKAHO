@@ -13,6 +13,39 @@
 La réécriture de l'application R Shiny (tag `v1.0.0`) en Flask sur
 card-api, publiée en 2.0.0 à la bascule (M10).
 
+## Les objectifs de la 2.0.0
+
+Dits par l'utilisateur le 2026-11-10. Ils orientent chaque chantier ; ce
+qui est abandonné l'est en connaissance de cause, dans
+`dev/decisions.md` (hors périmètre).
+
+- **Pour qui.** Les opérationnels de l'eau, gestionnaires et
+  chercheurs, mais aussi la pédagogie, l'appui aux médias, le grand
+  public et les conférences. L'application doit se comprendre sans mode
+  d'emploi.
+- **Droit au but, le détail à côté.** Modèle : earth.nullschool.net,
+  dont MAKAHO est déjà de la famille. La carte occupe l'écran et dit
+  tout de suite ce qu'elle a à dire, les commandes restent discrètes ;
+  le détail se trouve à côté, au survol, dans des pages séparées, par
+  des renvois vers des ressources externes. Plus direct, plus fluide et
+  plus agréable que la version R, dans un style qui reste sobre.
+- **Rapide et à jour.** La lenteur et l'absence de mise à jour sont deux
+  défauts majeurs de la version R. card-api règle la donnée ; à MAKAHO
+  de ne pas réintroduire de lenteur (M3, M8).
+- **Changer de jeu de stations simplement.** card-api sert n'importe
+  quelle station Hub'Eau ; la liste reste une donnée de MAKAHO, le RRSE
+  par défaut (M3).
+- **L'export de données reste la porte des usages experts** : ce qui
+  permet à chacun de refaire les analyses qu'il souhaite. À pousser et
+  à vérifier (M6).
+- **Exporter la carte proprement**, en PNG, SVG, PDF voire HTML, avec
+  ses données, à la manière de MEANDRE (M6).
+- **Un peu plus de statistique, courte** : stations en hausse et en
+  baisse, médiane des pentes, ce genre de résumé, sans sur-analyse qui
+  noierait le message (M2).
+- **Les propositions sont bienvenues** pendant l'implémentation, tant
+  qu'elles restent sobres et simples.
+
 ## M1. Le socle
 
 Un dépôt qui démarre, se déploie, et sait parler au service. Rien
@@ -50,9 +83,13 @@ signale là-bas, avant cette version.
 
 Le coeur, et la première chose qui doit marcher.
 
-- Leaflet, tuiles d'un fournisseur sans jeton si possible
-  (OpenStreetMap, CartoDB), les trois thèmes de l'actuel. S'il faut un
-  jeton, il passe par l'environnement.
+- **Le fond de carte, à trancher en premier.** Soit Leaflet et des
+  tuiles d'un fournisseur sans jeton (OpenStreetMap, CartoDB), soit une
+  carte dessinée en SVG depuis des contours (France, rivières), comme
+  MEANDRE. La seconde ne dépend d'aucun fournisseur et s'exporte
+  proprement en vectoriel (M6) ; la première donne le zoom et le
+  repérage fin. Un seul fond, sobre : les trois thèmes de la version R
+  ne reviennent pas. S'il faut un jeton, il passe par l'environnement.
 - **Marqueurs en CSS, pas en fichiers.** Un sprite de trois symboles
   (`<symbol>` : triangle haut, triangle bas, rond) défini une fois, un
   `divIcon` par station avec un `<use>`, la couleur en propriété CSS
@@ -65,7 +102,9 @@ Le coeur, et la première chose qui doit marcher.
 - **La barre de couleur avec son histogramme.** Bornes recalculées côté
   MAKAHO à partir des pentes reçues, pour maîtriser sur quel ensemble
   les extrêmes sont pris.
-- Les compteurs (total, hausse, baisse).
+- **Le résumé court** : stations en hausse, en baisse, sans tendance
+  significative, médiane des pentes. Rien de plus sans une raison qui
+  serve le message.
 
 *Fin :* la carte des tendances de `QA` sur les 228 stations, lue depuis
 le service, conforme à
@@ -77,6 +116,9 @@ le service, conforme à
   La facette `phenomenon` donne les quatre régimes aux mêmes effectifs ;
   le regroupement des familles paramétrées se déduit des facettes au
   lieu d'être deviné par expression régulière sur des noms de fichiers.
+- **Le jeu de stations** : le RRSE par défaut, et de quoi en changer
+  simplement (objectifs). Sa forme est à proposer : listes fournies par
+  MAKAHO, liste déposée par l'usager, ou les deux.
 - Les cinq modes de sélection : tout, aucun, clic, polygone additif et
   soustractif, recherche par nom.
 - Le curseur de période d'analyse, **avec le garde-fou des 30 ans**.
@@ -117,19 +159,32 @@ n'est pas un confort.
 
 ## M6. Les exports
 
-- Le zip : `meta.csv`, `metaEX.csv`, `dataEX.csv`, `trendEX.csv`, la
-  licence, et **le README de provenance à trous**, qui est une réussite
-  de l'actuel. Il gagne le commit et le SWHID de `card` et de `stase`.
+La porte des usages experts, et ce qui sert aux médias et aux
+conférences.
+
+- **Les données** : le zip de la version R (`meta.csv`, `metaEX.csv`,
+  `dataEX.csv`, `trendEX.csv`, la licence, et **le README de provenance
+  à trous**, qui est une réussite de l'actuel), qui gagne le commit et
+  le SWHID de `card` et de `stase`. À vérifier : qu'un export se
+  recharge et se recalcule ailleurs (R, Python) sans deviner quoi que
+  ce soit.
+- **La carte** : en PNG, SVG, PDF, voire HTML autonome, composée avec
+  sa barre de couleur, son titre et ses paramètres, et accompagnée de
+  ses données. Modèle : MEANDRE (`exportSVG` et `exportData` dans
+  `../../MEANDRE_project/MEANDRE/static/js/script.js`), où le nom du
+  fichier porte les paramètres et l'archive sa notice. Remplace le mode
+  capture d'écran de la version R.
 - **Écrit par requête, pas dans un répertoire partagé** (audit, 4.9).
 - `/v1/extract.csv` et `/v1/trend.csv` portent déjà leur provenance en
   lignes de commentaire : à réutiliser plutôt qu'à refaire.
 
 ## M7. L'aide
 
-Les 16 pages guidées sont un travail de rédaction : le contenu se
-reprend, le mécanisme se refait en quelques dizaines de lignes. À
-réexaminer au passage : une visite de 16 écrans est-elle toujours la
-bonne forme ?
+**L'application s'ouvre sur la carte, jamais sur l'aide.** L'aide vit
+à côté : une page séparée, des explications au survol, des renvois
+vers des ressources externes (la méthode, le RRSE, card-api). Le contenu
+des 16 pages guidées de la version R se reprend là où il sert ; la
+visite guidée disparaît.
 
 ## M8. Le préchauffage
 
@@ -150,12 +205,12 @@ calcul (cf. M3).
 **Ce n'est pas un cache dans MAKAHO** : il ne stocke rien, il est juste
 le premier appelant. La décision 2 tient.
 
-## M9. Les fiches PDF
+## M9. Les fiches PDF, après la 2.0.0
 
-Volontairement loin. Aujourd'hui 232 fichiers pré-générés, 364 Mo, plus
-un zip de 150 Mo, produits par une chaîne extérieure. Le service de
-téléchargement est du fichier statique, trivial à porter. Ce qui demande
-une décision est **la chaîne qui les fabrique**, hors périmètre.
+Retirées de la 2.0.0 (`dev/decisions.md`). La version R en sert 232,
+pré-générées par une chaîne extérieure et jamais mises à jour. Elles
+reviendront produites par une chaîne automatisée, à concevoir une fois
+la 2.0.0 en ligne.
 
 ## M10. La bascule
 
