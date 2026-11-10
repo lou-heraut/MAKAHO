@@ -1,0 +1,13 @@
+# Secrets : tout .env sauf le modèle
+.env*
+!.env.example
+
+# Python
+.python_env/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Ce que l'utilisateur veut sortir du git status
+bac/
