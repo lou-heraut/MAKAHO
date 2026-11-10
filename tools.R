@@ -33,7 +33,7 @@ word = function (id, lg) {
 ## 2. VARIABLE _______________________________________________________
 get_Variable = function (CARD_path, check_varSub, lg) {
 
-    if (verbose) print("plot_trend")
+    if (verbose) print("get_Variable")
     
     CARD_filepath = list.files(CARD_path,
                                full.names=TRUE,
@@ -96,6 +96,7 @@ get_Variable = function (CARD_path, check_varSub, lg) {
                                           gsub('_', '<sub>', variable),
                                           "</sub>", "</span>")
                 }
+
                 Variable = bind_rows(
                     Variable,
                     dplyr::tibble(type=topic[1],
@@ -105,8 +106,8 @@ get_Variable = function (CARD_path, check_varSub, lg) {
                                   variableHTML=variableHTML,
                                   name=list(name),
                                   sub=list(sub),
-                                  preferred_hydrological_month=
-                                      preferred_hydrological_month,
+                                  preferred_sampling_period=
+                                      preferred_sampling_period,
                                   palette=str_split(palette,
                                                     " ")))
                 
@@ -142,8 +143,8 @@ get_Variable = function (CARD_path, check_varSub, lg) {
                                       variableHTML=variableHTML,
                                       name=list(name),
                                       sub=list(sub),
-                                      preferred_hydrological_month=
-                                  preferred_hydrological_month,
+                                      preferred_sampling_period=
+                                  preferred_sampling_period,
                                       palette=str_split(palette,
                                                         " ")))
                 } else {
@@ -161,7 +162,7 @@ get_Variable = function (CARD_path, check_varSub, lg) {
                                       gsub('_', '<sub>', variable),
                                       "</sub>", "</span>")
             }
-            
+
             Variable = bind_rows(
                 Variable,
                 dplyr::tibble(type=topic[1],
@@ -171,8 +172,8 @@ get_Variable = function (CARD_path, check_varSub, lg) {
                               variableHTML=variableHTML,
                               name=list(name),
                               sub=NA,
-                              preferred_hydrological_month=
-                                  preferred_hydrological_month,
+                              preferred_sampling_period=
+                                  preferred_sampling_period,
                               palette=str_split(palette,
                                                 " ")))
         }

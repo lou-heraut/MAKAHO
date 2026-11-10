@@ -126,7 +126,7 @@
             "roleName": "Management"
         }
     ],
-    "codeRepository": "https://github.com/super-lou/MAKAHO",
+    "codeRepository": "https://github.com/lou-heraut/MAKAHO",
     "dateCreated": "2022-03-01",
     "dateModified": "2022-07-01",
     "datePublished": "2022-07-01",
@@ -149,8 +149,8 @@
     "operatingSystem": "Debian 10.x",
     "programmingLanguage": "R 4.x.x",
     "softwareRequirements": [
-        "https://github.com/super-lou/EXstat",
-        "https://github.com/super-lou/CARD"
+        "https://github.com/lou-heraut/EXstat",
+        "https://github.com/lou-heraut/CARD"
     ],
     "version": "1.0.0",
     "developmentStatus": "inactive"

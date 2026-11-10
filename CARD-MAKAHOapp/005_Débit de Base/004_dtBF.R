@@ -2,24 +2,24 @@
 #  / __| __ _  _ _  __| |
 # | (__ / _` || '_|/ _` |
 #  \___|\__,_||_|  \__,_|
-# Copyright 2022-2024 Louis Héraut (louis.heraut@inrae.fr)*1
+# Copyright 2022-2025 Louis, Héraut <louis.heraut@inrae.fr>*1
 #
-# *1   INRAE, France
+# *1 INRAE, UR RiverLy, Villeurbanne, France
 #
-# This file is part of CARD R library.
+# This file is part of CARD R package.
 #
-# CARD R library is free software: you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# CARD R package is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
 #
-# CARD R library is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
+# CARD R package is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CARD R library.
+# along with CARD R package.
 # If not, see <https://www.gnu.org/licenses/>.
 
 
@@ -43,8 +43,9 @@ CARD$P.sampling_period_fr = "01-09, 31-08"
 CARD$P.topic_fr = "Débit, Débit de Base, Durée"
 
 ### Global ___________________________________________________________
+CARD$P.input_vars = "Q"
 CARD$P.source = "TALLAKSEN, L. et H. VAN LANEN, éd. (2004). Hydrological drought. Processes and estimation methods for streamflow and groundwater. English. Developments in water science 48. Netherlands : Elsevier. ISBN : 9780444516886."
-CARD$P.preferred_hydrological_month = 9
+CARD$P.preferred_sampling_period = "09-01"
 CARD$P.is_date = FALSE
 CARD$P.to_normalise = TRUE
 CARD$P.palette = "#003C30 #01665E #35978F #80CDC1 #C7EAE5 #F6E8C3 #DFC27D #BF812D #8C510A #543005"

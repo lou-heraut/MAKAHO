@@ -56,11 +56,11 @@ if (dev) {
     devtools::load_all(file.path(dev_lib_path,
                                  "EXstat_project/EXstat/"))
     devtools::load_all(file.path(dev_lib_path,
-                                 "EXstat.CARD_project/EXstat.CARD/"))
+                                 "CARD_project/CARD/"))
 } else {
     print('Loading EXstat from package')
     library(EXstat)
-    library(EXstat.CARD)
+    library(CARD)
 }
 
 #### 1.2.2. ASHE _____________________________________________________

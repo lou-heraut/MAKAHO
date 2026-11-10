@@ -2,24 +2,24 @@
 #  / __| __ _  _ _  __| |
 # | (__ / _` || '_|/ _` |
 #  \___|\__,_||_|  \__,_|
-# Copyright 2022-2024 Louis Héraut (louis.heraut@inrae.fr)*1
+# Copyright 2022-2025 Louis, Héraut <louis.heraut@inrae.fr>*1
 #
-# *1   INRAE, France
+# *1 INRAE, UR RiverLy, Villeurbanne, France
 #
-# This file is part of CARD R library.
+# This file is part of CARD R package.
 #
-# CARD R library is free software: you can redistribute it and/or
-# modify it under the terms of the GNU General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# CARD R package is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
 #
-# CARD R library is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
+# CARD R package is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CARD R library.
+# along with CARD R package.
 # If not, see <https://www.gnu.org/licenses/>.
 
 
@@ -75,6 +75,7 @@ CARD$P.sampling_period_fr = c("01-01, 31-01", "01-02, 28(29)-02", "01-03, 31-03"
 CARD$P.topic_fr = "Débit, Moyennes Eaux, Intensité"
 
 ### Global ___________________________________________________________
+CARD$P.input_vars = "Q"
 CARD$P.is_date = FALSE
 CARD$P.to_normalise = TRUE
 CARD$P.palette = "#452C1A #7F4A23 #B3762A #D4B86A #EFE0B0 #BCE6DB #7ACEB9 #449C93 #2A6863 #193830"

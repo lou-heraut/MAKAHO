@@ -1070,7 +1070,7 @@ server = function (input, output, session) {
         }
     })
 
-#### 4.5.6. proba / month / season ___________________________________    
+#### 4.5.6. proba / month / season ___________________________________ 
     proba_choices = reactive({
         if (verbose) print("proba_choices")
         id = which(Variable()$variable == variable() &

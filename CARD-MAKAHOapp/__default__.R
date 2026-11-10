@@ -43,6 +43,7 @@ CARD$P.sampling_period_fr = NULL
 CARD$P.topic_fr = NULL
 
 ### Global ___________________________________________________________
+CARD$P.is_experimental = FALSE
 CARD$P.input_vars = "X"
 CARD$P.source = NULL
 CARD$P.preferred_sampling_period = NULL
