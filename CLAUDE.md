@@ -10,6 +10,8 @@ prendra le nom `MAKAHO` à la bascule. Le dépôt est le même pour les
 deux : `lou-heraut/MAKAHO`, l'application R figée au tag `v1.0.0` sur
 `master`, la réécriture sur `main`, une histoire neuve sans ancêtre
 commun avec le R (décision 7). Chaque dossier reste sur sa branche.
+Ce dossier ne suit que `main`, sans les tags (réglage de `origin`) :
+ne pas y récupérer `master` ni `v1.0.0`, qui y ramèneraient le R.
 
 Où en est le travail : `ROADMAP.md`. Ce qui a été fait : `CHANGELOG.md`.
 
@@ -19,8 +21,8 @@ Un rôle par fichier, chacun l'annonce dans un bandeau de statut en tête ;
 ne jamais recopier d'un fichier à l'autre, renvoyer. Les chemins cités
 dans les documents partent de la racine du dépôt.
 
-- `ROADMAP.md` : les chantiers M1 à M10 dans l'ordre, et les questions
-  ouvertes.
+- `ROADMAP.md` : les objectifs de la 2.0.0, les chantiers M1 à M10 dans
+  l'ordre, et les questions ouvertes.
 - `CHANGELOG.md` : ce qui a été fait, et la doctrine des numéros en
   tête. Il porte aussi la correspondance des anciens chemins
   (`docs/dev/...`) cités par les documents figés.

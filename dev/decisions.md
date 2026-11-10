@@ -84,8 +84,9 @@ Arrêtées entre le 2026-09-18 et le 2026-11-10.
    contournement local est la dette de demain.
 4. **On ne traduit pas, on refait.** Les 6 304 lignes de R de la
    version 1.0.0 ne sont pas un cahier des charges. Le cahier des
-   charges est la section 2 de l'audit, plus la liste de ce qui est sain
-   en 4.1.
+   charges est la section 2 de l'audit (ce que l'application permet) et
+   les objectifs de la 2.0.0 en tête de `ROADMAP.md`, plus ce que
+   l'audit juge sain en 4.1 (décision 9).
 5. **Aucun décompte ni plafond écrit en clair** dans une description
    d'API, ni recopié d'un dépôt à l'autre. Règle importée de card-api,
    où elle a été payée deux fois.
