@@ -73,12 +73,13 @@ Arrêtées entre le 2026-09-18 et le 2026-11-11.
    de l'audit, sont des propositions que l'implémentation peut remplacer
    par mieux ; seules les décisions de ce fichier engagent.
    **Précisé le 2026-11-11 par l'utilisateur** : l'interface de la
-   2.0.0 converge vers celle de la 1.0.0 en ligne. Une première page,
-   construite d'après une figure de card-api sans regarder
-   l'application, a été refusée parce qu'elle s'en éloignait trop. Le
-   code reste neuf ; l'allure, elle, se reprend. Jusqu'où lire les
-   fichiers d'interface R pour cela : question ouverte (`ROADMAP.md`,
-   M2).
+   2.0.0 converge vers celle de la 1.0.0 en ligne, earth.nullschool.net
+   restant l'inspiration derrière (le CSS de la 1.0.0 avait été
+   construit dans son esprit). Une première page, construite d'après une
+   figure de card-api sans regarder l'application, a été refusée parce
+   qu'elle s'en éloignait trop. Le code reste neuf ; l'allure se
+   reprend. Le CSS de la 1.0.0, propre à Shiny, sert de référence et non
+   de vérité. Le détail : `ROADMAP.md`, M2.
 10. **Leaflet et un fond de carte complet, pas une carte dessinée en
     SVG** (2026-11-11, voulu par l'utilisateur). MAKAHO montre des
     observations de terrain : il faut pouvoir situer une station sur
@@ -167,8 +168,9 @@ le 2026-11-10.
   existe à 225 entrées et card-api est bilingue de bout en bout : le
   jour où la question se pose, la matière est là.
 - **Abandonné pour la 2.0.0, en connaissance de cause** (2026-11-10,
-  voulu par l'utilisateur) : l'aide guidée en page d'accueil, qui gêne
-  plus qu'elle n'aide (l'aide passe à côté, M7) ; le mode capture
+  voulu par l'utilisateur) : l'aide guidée imposée en page d'accueil,
+  qui gêne plus qu'elle n'aide (l'aide passe à côté, la visite devient
+  facultative, M7) ; le mode capture
   d'écran, que remplace un vrai export de cartes (M6) ; les trois
   thèmes de fond de carte ; les fiches PDF par station, à refaire plus
   tard en chaîne automatisée (M9).

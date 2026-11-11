@@ -126,9 +126,10 @@ Détaillées avec leur raison dans `dev/decisions.md`. En bref :
    passe à 2.0.0.
 8. **MAKAHO quitte SK8 pour une VM**, peut-être celle de card-api.
 9. **La réécriture part de zéro**, mais **son interface converge vers
-   celle de la 1.0.0 en ligne** (2026-11-11) : la regarder avant
-   d'écrire une page. Les pistes techniques de `ROADMAP.md` sont des
-   propositions.
+   celle de la 1.0.0 en ligne** (2026-11-11), earth.nullschool.net en
+   inspiration derrière : la regarder avant d'écrire une page. Son CSS,
+   propre à Shiny, est une référence, pas une vérité. Les pistes
+   techniques de `ROADMAP.md` sont des propositions.
 10. **Leaflet et un vrai fond de carte**, pas une carte dessinée en
     SVG : MAKAHO montre des observations de terrain, qu'il faut pouvoir
     situer. Le fond : Plan IGN en gris et relief, de la Géoplateforme,

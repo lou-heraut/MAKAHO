@@ -69,8 +69,6 @@ d'affiché encore. Fait (`CHANGELOG.md`, et le détail dans
   de MAKAHO (un débit par adresse, par exemple). Chaque demande de la
   page part sans quota ni plafond de fiches, en tête de file de
   card-api (revue de M2).
-- Les Actions de GitHub sont désactivées sur le dépôt : à activer par
-  l'utilisateur (Settings, Actions) pour que `tests.yml` tourne.
 
 Le client a tourné sur le contrat de card-api le 2026-11-11, avec la
 clé : c'est ce que card-api attendait pour passer en 1.0.0 (son
@@ -82,17 +80,24 @@ Une première page existe (`CHANGELOG.md`) mais **n'est pas validée**
 (2026-11-11) : son interface s'éloigne trop de celle de la 1.0.0. Le
 pourquoi et ce qui se garde : `dev/plans/2026-11-11_m2-map.md`.
 
-- **Converger vers l'interface de MAKAHO 1.0.0** (voulu par
-  l'utilisateur) : sa disposition, ses panneaux, sa légende, ses
-  marqueurs, son allure, sur le fond déjà choisi (décision 10). Partir
-  de l'application en ligne, capture par capture, avant d'écrire.
-- **À trancher par l'utilisateur avant de reprendre** : la décision 9
-  interdit de lire le code R pour écrire le nouveau. Pour reproduire
-  l'interface fidèlement, peut-on lire ses fichiers d'interface (`ui.R`,
-  `www/ui.css`, les marqueurs SVG), pour l'allure seulement, la logique
-  restant neuve et les chiffres venant de card-api ? Et les objectifs de
-  la 2.0.0 (le modèle earth.nullschool.net, l'aide à côté) s'appliquent-
-  ils ensuite, en améliorations proposées une à une ?
+Ce que l'utilisateur attend (2026-11-11) :
+
+- **La cible est MAKAHO 1.0.0 tel qu'il est en ligne** : sa disposition,
+  ses panneaux, sa légende, ses marqueurs, ses interactions et tout ce
+  qu'il donne à lire, sur le fond déjà choisi (décision 10). Partir de
+  l'application en ligne, capture par capture, avant d'écrire.
+- **earth.nullschool.net reste l'inspiration derrière**, une autre porte
+  de créativité : le CSS de la 1.0.0 avait été construit dans son
+  esprit, et cet esprit se garde.
+- **Le CSS de la 1.0.0 n'est pas une vérité** : il était propre à Shiny.
+  Il sert de référence pour l'allure, pas de modèle à recopier. Lire les
+  fichiers d'interface R dans ce but paraît admis par cette réponse ; en
+  cas de doute, le confirmer au début de la reprise.
+- **La première page ne convient en rien**, sauf peut-être le fond :
+  l'allure, les interactions et l'information affichée sont très en
+  deçà de la 1.0.0, et la forme de la barre de couleur est contestable.
+- **Les améliorations viendront après**, proposées une à une, une fois
+  la page proche de la 1.0.0 : pas avant.
 
 ## M3. Le panneau d'analyse
 
@@ -175,8 +180,12 @@ conférences.
 **L'application s'ouvre sur la carte, jamais sur l'aide.** L'aide vit
 à côté : une page séparée, des explications au survol, des renvois
 vers des ressources externes (la méthode, le RRSE, card-api). Le contenu
-des 16 pages guidées de la version R se reprend là où il sert ; la
-visite guidée disparaît.
+des 16 pages guidées de la version R se reprend là où il sert. La
+1.0.0 avait déjà un peu de cette aide à côté ; sa visite guidée,
+laborieuse et lourde en Shiny, devient **facultative**, jamais imposée
+(2026-11-11). Chercher une forme à la manière d'earth.nullschool.net
+pour l'aide et les informations importantes, placées à côté de la
+carte.
 
 ## M8. Le préchauffage
 
