@@ -76,6 +76,24 @@ Le client a tourné sur le contrat de card-api le 2026-11-11, avec la
 clé : c'est ce que card-api attendait pour passer en 1.0.0 (son
 `dev/decisions.md`). Ce qui gênait est dans le message déposé chez lui.
 
+## M2. La carte, à reprendre
+
+Une première page existe (`CHANGELOG.md`) mais **n'est pas validée**
+(2026-11-11) : son interface s'éloigne trop de celle de la 1.0.0. Le
+pourquoi et ce qui se garde : `dev/plans/2026-11-11_m2-map.md`.
+
+- **Converger vers l'interface de MAKAHO 1.0.0** (voulu par
+  l'utilisateur) : sa disposition, ses panneaux, sa légende, ses
+  marqueurs, son allure, sur le fond déjà choisi (décision 10). Partir
+  de l'application en ligne, capture par capture, avant d'écrire.
+- **À trancher par l'utilisateur avant de reprendre** : la décision 9
+  interdit de lire le code R pour écrire le nouveau. Pour reproduire
+  l'interface fidèlement, peut-on lire ses fichiers d'interface (`ui.R`,
+  `www/ui.css`, les marqueurs SVG), pour l'allure seulement, la logique
+  restant neuve et les chiffres venant de card-api ? Et les objectifs de
+  la 2.0.0 (le modèle earth.nullschool.net, l'aide à côté) s'appliquent-
+  ils ensuite, en améliorations proposées une à une ?
+
 ## M3. Le panneau d'analyse
 
 - **Les menus sont construits depuis `/v1/cards` et `/v1/vocabulary`.**

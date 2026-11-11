@@ -72,6 +72,13 @@ Arrêtées entre le 2026-09-18 et le 2026-11-11.
    l'application en ligne. Les pistes techniques de `ROADMAP.md`, tirées
    de l'audit, sont des propositions que l'implémentation peut remplacer
    par mieux ; seules les décisions de ce fichier engagent.
+   **Précisé le 2026-11-11 par l'utilisateur** : l'interface de la
+   2.0.0 converge vers celle de la 1.0.0 en ligne. Une première page,
+   construite d'après une figure de card-api sans regarder
+   l'application, a été refusée parce qu'elle s'en éloignait trop. Le
+   code reste neuf ; l'allure, elle, se reprend. Jusqu'où lire les
+   fichiers d'interface R pour cela : question ouverte (`ROADMAP.md`,
+   M2).
 10. **Leaflet et un fond de carte complet, pas une carte dessinée en
     SVG** (2026-11-11, voulu par l'utilisateur). MAKAHO montre des
     observations de terrain : il faut pouvoir situer une station sur

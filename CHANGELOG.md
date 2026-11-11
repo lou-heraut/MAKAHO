@@ -18,7 +18,9 @@ Chaque entrée dit ce qui a changé et renvoie au document qui l'explique.
 
 ### Ajouté
 
-- **La carte (M2, 2026-11-11).** La tendance de QA sur les 228 stations
+- **Une première carte (M2, 2026-11-11), non validée** : son interface
+  est à reprendre pour converger vers celle de la 1.0.0 (`ROADMAP.md`,
+  M2). La tendance de QA sur les 228 stations
   du RRSE, lue depuis card-api : le fond choisi (décision 10), un
   marqueur par station dont la forme dit le verdict et la couleur la
   classe de pente, une infobulle, la barre de couleur avec son
