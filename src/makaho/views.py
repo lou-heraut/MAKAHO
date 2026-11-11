@@ -16,6 +16,8 @@ doit pas quitter le serveur, et tout ce qui vient du service passe par
 `card_client` (décision 3).
 """
 
+import re
+
 from flask import Blueprint, current_app, render_template, request
 
 from . import trends
@@ -29,6 +31,12 @@ DEFAULT_CARD = "QA"
 
 # Le rythme auquel la page revient voir une demande partie en file.
 POLL_SECONDS = 5
+
+# Une fiche à la fois, par son identifiant : la demande part avec la clé
+# de MAKAHO, sans quota ni plafond de fiches, en tête de file. Laisser
+# passer une liste (`QA,QMNA,...`) ferait de chaque visiteur un déposant
+# de jobs prioritaires (revue de M2, 2026-11-11).
+_CARD = re.compile(r"[A-Za-z0-9_-]{1,64}")
 
 
 def card_client():
@@ -55,6 +63,9 @@ def trend():
     appel. Une demande partie en file rend 202 et son numéro de job.
     """
     card = request.args.get("card", DEFAULT_CARD)
+    if not _CARD.fullmatch(card):
+        return {"error": "invalid",
+                "detail": f"une fiche à la fois, par son identifiant : {card!r}"}, 400
     positions = request.args.get("positions") == "1"
     result = card_client().trend(station_list(), card,
                                  stations_meta=positions)

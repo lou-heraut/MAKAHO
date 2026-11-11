@@ -53,6 +53,11 @@ dans les documents partent de la racine du dépôt.
                     clé ne quitte pas le serveur.
     stations.py     les listes de station_lists/, seule donnée locale :
                     un code par ligne, la source en lignes # en tête.
+    trends.py       ce que la page affiche (classes, histogramme, résumé,
+                    provenance), calculé ici ; le JavaScript ne calcule rien.
+    static/         css/, js/, vendor/ (Leaflet copié, sans CDN : voir son
+                    README). templates/index.html porte le sprite des
+                    marqueurs.
     __init__.py     create_app. L'environnement est décrit dans
                     .env.example, et seulement là.
   tests/            hors ligne, sur le card-api simulé de conftest.py ;
@@ -62,8 +67,9 @@ dans les documents partent de la racine du dépôt.
   ```
 
   `make` liste les commandes.
-- `README.md` : à écrire quand il y aura un logiciel à décrire. Un
-  README qui décrit un logiciel qui n'existe pas est un mensonge daté.
+- `README.md` : ce que fait MAKAHO, d'où viennent ses chiffres, comment
+  le lancer. Il ne décrit que ce qui existe : un README qui annonce un
+  logiciel absent est un mensonge daté.
 
 ## L'écosystème, et qui fait quoi
 

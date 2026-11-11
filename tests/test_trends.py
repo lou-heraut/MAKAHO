@@ -18,12 +18,13 @@ def real():
     return result
 
 
-def _result(rows, relative=True, unit="m^{3}.s^{-1}"):
+def _result(rows, relative=True, unit="m^{3}.s^{-1}", is_date=False):
     """Une réponse minimale, pour les cas que la vraie ne montre pas."""
     return {"data_fingerprint": "v2:x",
             "data": {"V": rows},
             "meta": [{"variable_en": "V", "name_fr": "Variable",
                       "unit_fr": unit, "relative": relative,
+                      "is_date": is_date,
                       "palette": " ".join(f"#{i}{i}{i}" for i in range(10))}],
             "stations_omitted": []}
 
@@ -106,3 +107,19 @@ def test_une_seule_variable_par_appel():
     result["data"]["W"] = []
     with pytest.raises(ValueError, match="une variable attendue"):
         for_page(result)
+
+
+def test_une_date_derive_en_jours_par_an():
+    rows = [{"code_station": "A", "h": True, "a": 0.4, "a_relative": None},
+            {"code_station": "B", "h": False, "a": -0.1, "a_relative": None}]
+    page = for_page(_result(rows, relative=False, unit="jour de l'année",
+                            is_date=True))
+    assert page["variable"]["unit"] == "jours / an"
+
+
+def test_les_decimales_suivent_l_ordre_de_grandeur_des_pentes(real):
+    assert for_page(real)["variable"]["digits"] == 2
+    rows = [{"code_station": c, "h": False, "a": a, "a_relative": None}
+            for c, a in (("A", -2e-4), ("B", 1e-4), ("C", 3e-4))]
+    digits = for_page(_result(rows, relative=False, unit=""))["variable"]["digits"]
+    assert 5 <= digits <= 7                 # 1e-4 lisible, pas « 0,00 »

@@ -99,11 +99,29 @@ def test_un_numero_de_job_douteux_ne_part_pas(app, fake):
     assert fake.requests == []
 
 
-def test_une_fiche_refusee_par_le_service_est_une_demande_mal_formee(app, fake):
-    fake.on("GET", "/v1/trend", (422, {"detail": "fiche inconnue"}))
+def test_une_seule_fiche_part_avec_la_cle(app, fake):
+    """Une liste de fiches ferait déposer un job prioritaire par visiteur :
+    refusée avant de partir."""
+    for card in ("QA,VCN10", "QA VCN10", "../v1", ""):
+        response = app.test_client().get("/api/trend", query_string={"card": card})
+        assert response.status_code == 400, card
+    assert fake.requests == []
+
+
+def test_une_fiche_inconnue_du_service_n_est_pas_une_faute_de_makaho(app, fake):
+    """card-api répond 404 à une fiche inconnue, comme à une liste sans
+    débits (il ne vérifie l'identifiant qu'après avoir lu les chroniques) :
+    la page reçoit un 502, pas un 400."""
+    fake.on("GET", "/v1/trend", (404, {"detail": "fiche inconnue"}))
     response = app.test_client().get("/api/trend?card=XYZ")
-    assert response.status_code == 400
-    assert response.get_json()["detail"] == "fiche inconnue"
+    assert response.status_code == 502
+
+
+def test_un_job_expire_se_dit_comme_tel(app, fake):
+    fake.on("GET", "/v1/jobs/abc123", (404, {"detail": "job inconnu ou expiré"}))
+    response = app.test_client().get("/api/jobs/abc123")
+    assert response.status_code == 502
+    assert response.get_json()["error"] == "job"
 
 
 def test_la_page_sert_leaflet_et_son_script_depuis_makaho(app):

@@ -53,71 +53,28 @@ d'affiché encore. Fait (`CHANGELOG.md`, et le détail dans
 `dev/plans/2026-11-11_m1-foundation.md`), sauf :
 
 - Reste à l'utilisateur : vérifier la fiche HAL de la version 1.0.0.
-- Cinq points relevés dans le code de card-api le 2026-11-11, déposés
+- Sept points relevés dans le code de card-api le 2026-11-11, déposés
   à sa racine (`message-makaho_2026-11-11.md`), à traiter depuis une
   session ouverte là-bas : le référentiel des stations lu chez Hub'Eau
-  à chaque appel (cf. M2), les plafonds d'une clé illisibles dans
+  à chaque appel, les plafonds d'une clé illisibles dans
   `/v1`, un renvoi périmé au `PLAN.md` d'ici, une licence en désaccord
-  dans son `codemeta.json`, deux exemples du README refusés en 422.
+  dans son `codemeta.json`, deux exemples du README refusés en 422,
+  un exemple R qui lit des champs disparus, une fiche inconnue découverte
+  après la lecture des chroniques.
 - Le déploiement : un serveur WSGI, `compose.yaml`, le service sur un
   port local de la VM de card-api derrière son Apache (décision 8).
   L'adresse de card-api devient alors locale (`.env.example`).
   **Reporté après M2** (2026-11-11) : rien à montrer avant la carte.
+  **Préalable** : limiter ce qu'un visiteur fait calculer avec la clé
+  de MAKAHO (un débit par adresse, par exemple). Chaque demande de la
+  page part sans quota ni plafond de fiches, en tête de file de
+  card-api (revue de M2).
 - Les Actions de GitHub sont désactivées sur le dépôt : à activer par
   l'utilisateur (Settings, Actions) pour que `tests.yml` tourne.
-- `README.md` dès qu'il y a quelque chose à décrire, au plus tard avec
-  la carte (M2).
 
 Le client a tourné sur le contrat de card-api le 2026-11-11, avec la
 clé : c'est ce que card-api attendait pour passer en 1.0.0 (son
 `dev/decisions.md`). Ce qui gênait est dans le message déposé chez lui.
-
-## M2. La carte
-
-Le coeur, et la première chose qui doit marcher. En cours :
-`dev/plans/2026-11-11_m2-map.md`.
-
-- **Le fond de tuiles, à choisir en premier.** Leaflet et un vrai fond
-  de carte (décision 10), dans la veine du fond de l'application en
-  ligne : neutre et léger, il laisse la place aux points et à
-  l'analyse, comme le fond d'un graphique scientifique. Sans jeton, et
-  français de préférence (2026-11-11, voulu par l'utilisateur). Un seul
-  fond : les trois thèmes de la version R ne reviennent pas.
-  - **Choisi le 2026-11-11** (décision 10), après essais à l'écran : le
-    Plan IGN de la Géoplateforme passé en gris clair, multiplié par
-    l'estompage du relief, et les rivières (couche Hydrographie) à
-    partir d'un zoom régional. Réglages essayés : dans Leaflet, filtre
-    CSS `grayscale` et opacité 0,4 sur le plan sur fond blanc,
-    `mix-blend-mode: multiply` et opacité 0,6 sur l'estompage, rivières
-    à 0,45 dès le zoom 8.
-  - La Géoplateforme annonce un accès public, sans frais, sous les
-    conditions générales de `cartes.gouv.fr/cgu` ; la licence de chaque
-    couche reste à lire. Ses tuiles autorisent le dessin dans un canvas
-    (en-tête CORS, vérifié le 2026-11-11), ce dont l'export a besoin
-    (M6) ; le gris et la multiplication s'y refont.
-- **Les positions des stations** viennent de card-api : `stations_meta`
-  joint à une tendance le référentiel Hub'Eau (libellé, longitude,
-  latitude). Le service le redemande à Hub'Eau à chaque appel : le
-  demander une fois par visite, pas à chaque recalcul.
-- **Marqueurs en CSS, pas en fichiers.** Un sprite de trois symboles
-  (`<symbol>` : triangle haut, triangle bas, rond) défini une fois, un
-  `divIcon` par station avec un `<use>`, la couleur en propriété CSS
-  personnalisée, **l'état en classe** (`significant-up`,
-  `not-significant`, `selected`, `gap`). Mettre la carte à jour devient
-  `el.className = ...` sur des noeuds en place. Les 895 SVG, le diff
-  d'URL, les trois couches et les `zIndexOffset` disparaissent ensemble.
-- Infobulle en `tooltip` lié au marqueur, ce qui tue la couche
-  invisible.
-- **La barre de couleur avec son histogramme.** Bornes recalculées côté
-  MAKAHO à partir des pentes reçues, pour maîtriser sur quel ensemble
-  les extrêmes sont pris.
-- **Le résumé court** : stations en hausse, en baisse, sans tendance
-  significative, médiane des pentes. Rien de plus sans une raison qui
-  serve le message.
-
-*Fin :* la carte des tendances de `QA` sur les 228 stations, lue depuis
-le service, conforme à
-`../../CARD_project/card-api/examples/carte_tendance_QA.png`.
 
 ## M3. Le panneau d'analyse
 
@@ -189,7 +146,8 @@ conférences.
   (retouchable dans Inkscape), le PDF se tire du SVG. Référence
   d'usage : les exports de MEANDRE, où le nom du fichier porte les
   paramètres et l'archive sa notice. Remplace le mode capture d'écran
-  de la version R.
+  de la version R. Le fond doit sortir comme à l'écran, où le relief
+  n'est multiplié qu'en partie (`dev/plans/2026-11-11_m2-map.md`).
 - **Écrit par requête, pas dans un répertoire partagé** (audit, 4.9).
 - `/v1/extract.csv` et `/v1/trend.csv` portent déjà leur provenance en
   lignes de commentaire : à réutiliser plutôt qu'à refaire.

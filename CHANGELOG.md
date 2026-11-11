@@ -18,6 +18,16 @@ Chaque entrée dit ce qui a changé et renvoie au document qui l'explique.
 
 ### Ajouté
 
+- **La carte (M2, 2026-11-11).** La tendance de QA sur les 228 stations
+  du RRSE, lue depuis card-api : le fond choisi (décision 10), un
+  marqueur par station dont la forme dit le verdict et la couleur la
+  classe de pente, une infobulle, la barre de couleur avec son
+  histogramme, le résumé (hausses, baisses, pente médiane) et la
+  provenance. `src/makaho/trends.py` prépare tout, le JavaScript ne fait
+  que dessiner ; les bornes des classes sont celles de stase, vérifiées
+  sur une vraie réponse. Leaflet est servi par MAKAHO, sans CDN.
+  Détail et revue : `dev/plans/2026-11-11_m2-map.md`. Le `README.md`
+  décrit maintenant ce qui existe.
 - **La mesure de l'audit passe par card-api, et confirme la décision 4
   (2026-11-11).** `scripts/mesure_sampling.py` (`make measure`) prend
   ses tendances à `/v1/trend` et ses chroniques à `/v1/chronicles`, au

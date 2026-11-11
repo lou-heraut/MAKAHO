@@ -225,13 +225,23 @@ class CardClient:
 
     def job(self, job_id):
         """Statut et progression d'un job : `queued`, `running`, `done`
-        ou `failed`."""
-        return self._get(_job_path(job_id))
+        ou `failed`. Un job inconnu ou expiré est de genre `job`."""
+        return self._job_get(_job_path(job_id))
 
     def job_result(self, job_id):
         """Le résultat gelé d'un job terminé, avec sa provenance. Avant
         `done`, le service répond 409."""
-        return self._get(_job_path(job_id, "/result"))
+        return self._job_get(_job_path(job_id, "/result"))
+
+    def _job_get(self, path):
+        """Sur une route de job, un 404 veut dire « job inconnu ou
+        expiré », pas « station sans donnée »."""
+        try:
+            return self._get(path)
+        except CardApiError as e:
+            if e.status == 404:
+                e.kind = "job"
+            raise
 
     def cancel_job(self, job_id):
         """Abandonner un job : un calcul dont plus personne n'attend le

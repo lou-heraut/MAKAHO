@@ -91,6 +91,7 @@
     source: "Hub'Eau, la source des débits, ne répond pas. Réessayez plus tard.",
     no_data: "Aucune station de la liste n'a de débits à analyser.",
     key: "MAKAHO n'a plus accès au service de calcul. Le problème est signalé.",
+    job: "Le calcul demandé a échoué ou a expiré. Rechargez la page pour le relancer.",
   };
 
   // ── Le dessin ─────────────────────────────────────────────────────
@@ -108,7 +109,7 @@
       `<span class="code">${escape(station.code)}</span>`,
     ];
     if (verdict) {
-      lines.push(`${verdict}, ${num(station.slope)} ${escape(variable.unit)}`);
+      lines.push(`${verdict}, ${num(station.slope, variable.digits)} ${escape(variable.unit)}`);
       lines.push(`p = ${num(station.p, 3)}, sur ${station.n} années`);
     } else {
       lines.push("Tendance non calculée");
@@ -178,7 +179,7 @@
     });
     variable.edges.forEach((edge, j) => {
       if (j % 2) return;                      // une borne sur deux, lisible
-      const label = Math.abs(edge) < 1e-12 ? "0" : num(edge);
+      const label = Math.abs(edge) < 1e-12 ? "0" : num(edge, variable.digits);
       parts.push(`<text class="tick" x="${(j + 1) * w}" y="${y + colH + 13}">${label}</text>`);
     });
     return `<svg viewBox="0 0 ${W} ${y + colH + 17}" role="img" aria-label="Classes de pente et nombre de stations par classe">${parts.join("")}</svg>`;
@@ -196,7 +197,7 @@
       : `Pente de Sen, en ${v.unit}`;
     $("colorbar").innerHTML = colorbar(v);
     let summary = `${s.down} en baisse, ${s.up} en hausse, ${s.none} sans `
-      + `tendance significative. Pente médiane : ${num(s.median)} ${v.unit}.`;
+      + `tendance significative. Pente médiane : ${num(s.median, v.digits)} ${v.unit}.`;
     if (page.omitted.length) {
       summary += ` ${page.omitted.length} station(s) écartée(s), sans débits.`;
     }

@@ -29,6 +29,7 @@ card-api (`examples/carte_tendance_QA.R`) :
 """
 
 import bisect
+import math
 import re
 import statistics
 
@@ -80,7 +81,8 @@ def for_page(result):
         "variable": {
             "id": variable,
             "name": meta.get("name_fr"),
-            "unit": "% / an" if relative else f"{_unit(meta.get('unit_fr'))} / an",
+            "unit": _slope_unit(meta, relative),
+            "digits": _digits(edges),
             "relative": relative,
             "palette": palette,
             "edges": edges,
@@ -145,6 +147,24 @@ def _trend(row):
     if not h or a == 0:
         return "none"
     return "up" if a > 0 else "down"
+
+
+def _slope_unit(meta, relative):
+    """L'unité de la pente affichée. Une date (jour de l'année) dérive en
+    jours par an, quelle que soit l'unité de la variable."""
+    if relative:
+        return "% / an"
+    if meta.get("is_date"):
+        return "jours / an"
+    return f"{_unit(meta.get('unit_fr'))} / an".strip()
+
+
+def _digits(edges):
+    """Les décimales qui distinguent deux bornes voisines, avec deux
+    chiffres significatifs : 2 pour des pentes de l'ordre du pour cent,
+    davantage pour une fréquence qui varie de 1e-4 par an."""
+    step = edges[1] - edges[0] if len(edges) > 1 else abs(edges[0]) or 1.0
+    return max(0, math.ceil(-math.log10(step)) + 1)
 
 
 def _unit(unit):
