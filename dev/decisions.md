@@ -25,7 +25,9 @@ Arrêtées entre le 2026-09-18 et le 2026-11-11.
    viennent les séries** (`card_client.py`).
 4. **Le mode échantillon du curseur est supprimé**, le départ d'année
    est conservé avec `preferred` par défaut. Justification mesurée :
-   l'audit, section 5, reproductible par `scripts/mesure_sampling.py`.
+   l'audit, section 5, reproductible par `scripts/mesure_sampling.py`
+   (`make measure`). Relancée le 2026-11-11 par card-api, mêmes
+   conclusions (`dev/audits/2026-11-11_sampling-measure.md`).
 5. **La durée de vie du cache de card-api passe au mois.** Ce n'est pas
    une demande de MAKAHO. La raison donnée par l'audit (6 : aucune fiche
    plus fine que le mois) a été écartée par card-api : Hub'Eau révise

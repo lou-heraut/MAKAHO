@@ -3,7 +3,7 @@
 PY := .python_env/bin/python
 
 .DEFAULT_GOAL := help
-.PHONY: help install run test test-live lint
+.PHONY: help install run test test-live lint measure
 
 help:        ## liste des commandes
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | \
@@ -24,3 +24,7 @@ test-live:   ## tests contre le card-api en ligne, avec la clé de .env
 
 lint:        ## lint (ruff, version épinglée dans pyproject)
 	$(PY) -m ruff check src tests scripts
+
+measure:     ## refait la mesure de l'audit (section 5) sur card-api, avec la clé
+	$(PY) -m pip install -q -e '.[measure]'
+	$(PY) scripts/mesure_sampling.py

@@ -11,12 +11,11 @@ quand `.env` en porte une. Peu d'appels, sur deux stations du RRSE.
 """
 
 import os
-import time
 from pathlib import Path
 
 import pytest
 
-from makaho.card_client import CardClient, Ticket
+from makaho.card_client import client_from_env
 from makaho.stations import station_list
 from conftest import trend_payload
 
@@ -27,37 +26,17 @@ pytestmark = pytest.mark.skipif(
 STATIONS = station_list("rrse")[:2]
 
 
-def _settings():
+@pytest.fixture(scope="module")
+def client():
+    """Le client réglé comme l'application : l'environnement, complété
+    par `.env` (que `flask run` lit, mais pas pytest)."""
     from dotenv import dotenv_values
-    env = Path(__file__).resolve().parent.parent / ".env"
-    return {**dotenv_values(env), **os.environ}
-
-
-@pytest.fixture(scope="module")
-def settings():
-    s = _settings()
-    if not s.get("MAKAHO_CARD_API_URL"):
+    env = {**dotenv_values(Path(__file__).resolve().parent.parent / ".env"),
+           **os.environ}
+    if not env.get("MAKAHO_CARD_API_URL"):
         pytest.skip("MAKAHO_CARD_API_URL absente de l'environnement et de .env")
-    return s
-
-
-@pytest.fixture(scope="module")
-def client(settings):
-    with CardClient(settings["MAKAHO_CARD_API_URL"],
-                    settings.get("MAKAHO_CARD_API_KEY") or None) as c:
+    with client_from_env(env) as c:
         yield c
-
-
-def _wait_for(client, result, timeout=120):
-    """Une demande partie en file : la suivre jusqu'au résultat."""
-    if not isinstance(result, Ticket):
-        return result
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        if client.job(result.job)["status"] == "done":
-            return client.job_result(result.job)
-        time.sleep(5)
-    pytest.fail(f"job {result.job} pas terminé en {timeout} s")
 
 
 def test_le_service_publie_ses_versions_et_ses_plafonds(client):
@@ -67,12 +46,16 @@ def test_le_service_publie_ses_versions_et_ses_plafonds(client):
     assert "stations" in info["limits"]["chronicles"]
 
 
-def test_le_vocabulaire_porte_les_regimes(client):
-    assert "phenomenon" in client.vocabulary()["vocabulary"]
+def test_le_catalogue_se_filtre_par_les_cles_du_vocabulaire(client):
+    """Les valeurs de facette sont les clés du vocabulaire (`low-flows`),
+    pas ses libellés : le simulé accepte tout, seul le vrai le dit."""
+    phenomena = client.vocabulary()["vocabulary"]["phenomenon"]
+    key = next(iter(phenomena))
+    assert client.cards(phenomenon=key)["count"] > 0
 
 
 def test_la_tendance_a_l_enveloppe_que_simulent_les_tests(client):
-    real = _wait_for(client, client.trend(STATIONS, "QA"))
+    real = client.wait(client.trend(STATIONS, "QA"), timeout=120)
     fake = trend_payload(STATIONS)
     assert set(fake) <= set(real)
     assert real["sampling"] == "preferred"
@@ -89,7 +72,7 @@ def test_la_chronique_porte_la_meme_provenance(client):
     assert real["data"]
 
 
-def test_la_cle_est_acceptee(client, settings):
+def test_la_cle_est_acceptee(client):
     if not client.has_key:
         pytest.skip("pas de clé de priorité dans l'environnement ni .env")
     assert "jobs" in client.jobs()

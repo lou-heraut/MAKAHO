@@ -42,11 +42,12 @@ def service():
 def card_api_error(e):
     """Un refus ou une panne de card-api, relayé à la page en 502.
 
-    Le 502 dit que la faute est en amont de MAKAHO ; le corps garde le
-    code du service et son explication, pour que la page distingue une
-    station sans donnée (404) d'un service injoignable.
+    Le 502 dit que la faute est en amont de MAKAHO. Le corps dit ce que
+    cela veut dire (`CardApiError.kind` : `no_data`, `busy`,
+    `unreachable`...), pas le code HTTP du service, qui reste dans
+    `card_client` (décision 3), et garde son explication.
     """
-    body = {"error": "card-api", "status": e.status, "detail": e.detail}
+    body = {"error": e.kind, "detail": e.detail}
     headers = {}
     if e.retry_after is not None:
         headers["Retry-After"] = str(int(e.retry_after))

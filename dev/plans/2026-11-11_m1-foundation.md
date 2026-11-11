@@ -22,11 +22,11 @@ card-api et ses tests hors ligne et live, la liste du RRSE.
    propage et `tests/test_citation.py` refuse un désaccord, comme dans
    les trois autres dépôts.
 4. [x] **Code de conduite**, repris de la version 1.0.0.
-5. [ ] **Attendre un job** : `CardClient.wait`, pour la mesure, les tests
+5. [x] **Attendre un job** : `CardClient.wait`, pour la mesure, les tests
    live, et plus tard le préchauffage (M8).
-6. [ ] **`scripts/mesure_sampling.py` par card-api**, puis la relancer et
+6. [x] **`scripts/mesure_sampling.py` par card-api**, puis la relancer et
    comparer aux chiffres de l'audit (section 5).
-7. [ ] **Revue** par un sous-agent sur l'ensemble de M1, puis corrections.
+7. [x] **Revue** par un sous-agent sur l'ensemble de M1, puis corrections.
 8. [ ] **Déploiement** : à la fin, avec l'utilisateur (port et adresse
    sur la VM).
 
@@ -36,6 +36,26 @@ card-api et ses tests hors ligne et live, la liste du RRSE.
   (`codemeta.json` et `AUTHORS` du tag `v1.0.0`) : les mêmes personnes,
   les mêmes rôles, les mêmes ORCID. Retirer quelqu'un d'une citation ne
   se décide pas seul ; à confirmer (question 1).
+
+- **La revue du 2026-11-11** (un sous-agent, en lecture seule, sur tout
+  M1) n'a rien trouvé de grave et a relevé huit points, tous vérifiés
+  puis corrigés :
+  - le catalogue n'accepte que les clés du vocabulaire (`low-flows`),
+    pas les libellés : l'exemple du client était faux, et un test live
+    appelle désormais le catalogue ;
+  - un 502 n'est plus rejoué : il arrive aussi quand le service tombe en
+    plein calcul ;
+  - le reste de l'application lit `CardApiError.kind` (`no_data`,
+    `busy`, `unreachable`...) et plus le code HTTP de card-api, qui
+    reste dans `card_client` (décision 3) ;
+  - `wait` suit le `Retry-After` du service et n'attend plus après son
+    dernier relevé ;
+  - la mesure vérifie que ses neuf appels ont lu la même donnée
+    (empreintes), calcule la moyenne sur 10 jours sur le calendrier
+    complet et non sur les lignes (Hub'Eau omet les jours manquants ; le
+    défaut était déjà dans la version de l'audit), et un paquet de
+    chroniques en échec ne coupe plus la mesure B ;
+  - `set_version.py` ne suggère plus `git commit -am`.
 
 ## Questions pour l'utilisateur
 

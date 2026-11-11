@@ -55,19 +55,17 @@ d'affiché encore. Le squelette et le client de card-api sont faits
 en attente :
 
 - Reste à l'utilisateur : vérifier la fiche HAL de la version 1.0.0.
-- Trois points relevés dans le code de card-api le 2026-11-11, déposés
+- Cinq points relevés dans le code de card-api le 2026-11-11, déposés
   à sa racine (`message-makaho_2026-11-11.md`), à traiter depuis une
   session ouverte là-bas : le référentiel des stations lu chez Hub'Eau
   à chaque appel (cf. M2), les plafonds d'une clé illisibles dans
-  `/v1`, un renvoi périmé au `PLAN.md` d'ici.
+  `/v1`, un renvoi périmé au `PLAN.md` d'ici, une licence en désaccord
+  dans son `codemeta.json`, deux exemples du README refusés en 422.
 - Le déploiement : un serveur WSGI, `compose.yaml`, le service sur un
   port local de la VM de card-api derrière son Apache (décision 8).
   L'adresse de card-api devient alors locale (`.env.example`).
 - `README.md` dès qu'il y a quelque chose à décrire, au plus tard avec
   la carte (M2).
-- `scripts/mesure_sampling.py` lit encore le cache de card-api au format
-  CSV d'avant sa 0.8.0, devenu Parquet depuis : le faire passer par
-  `/v1/chronicles` (décision 2) avant de relancer la mesure.
 
 Le client a tourné sur le contrat de card-api le 2026-11-11, avec la
 clé : c'est ce que card-api attendait pour passer en 1.0.0 (son

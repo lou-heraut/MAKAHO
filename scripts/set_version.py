@@ -129,9 +129,11 @@ def set_version(version):
     print(f"version {version} : "
           + (", ".join(changed) + " mis à jour" if changed else "déjà partout"))
     if released:
-        print("Reste : la section du CHANGELOG, `pip install -e .` pour que "
+        print("Reste : la section du CHANGELOG, `make install` pour que "
               "l'installation annonce le numéro, puis\n"
-              f"    git commit -am \"MAKAHO {version}\" && "
+              "    git add pyproject.toml CITATION.cff codemeta.json "
+              "CHANGELOG.md\n"
+              f"    git commit -m \"MAKAHO {version}\" && "
               f"git tag -a v{version} -m \"MAKAHO {version}\"")
 
 

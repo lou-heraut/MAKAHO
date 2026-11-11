@@ -36,7 +36,8 @@ dans les documents partent de la racine du dépôt.
   données à stase, card et card-api. Livrées, figées.
 - `scripts/mesure_sampling.py` : reproduit les chiffres de la section 5
   de l'audit, qui justifient la suppression d'une fonction de
-  l'interface. À relancer plutôt qu'à croire.
+  l'interface, par card-api. À relancer plutôt qu'à croire
+  (`make measure`).
 - Principes documentaires communs aux dépôts de l'écosystème :
   `../../CARD_project/card/dev/decisions.md`.
 - Le code, une ligne par module et ce qu'il ne faut pas casser :
@@ -44,9 +45,10 @@ dans les documents partent de la racine du dépôt.
   ```
   src/makaho/
     card_client.py  LE SEUL module qui connaisse card-api (décision 3) :
-                    aucune URL du service ni code HTTP ailleurs. Ne
-                    rejoue jamais un délai de lecture dépassé (le calcul
-                    continue côté service).
+                    aucune URL du service ni code HTTP ailleurs, le
+                    reste lit CardApiError.kind. Ne rejoue jamais un
+                    délai de lecture dépassé ni un 502 (le calcul a pu
+                    partir côté service).
     views.py        les routes. La page ne parle jamais à card-api : la
                     clé ne quitte pas le serveur.
     stations.py     les listes de station_lists/, seule donnée locale :

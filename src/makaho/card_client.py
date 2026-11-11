@@ -39,6 +39,7 @@ données) voyage avec elles jusqu'à l'interface.
 """
 
 import logging
+import os
 import time
 from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
@@ -60,27 +61,49 @@ USER_AGENT = f"MAKAHO/{_VERSION} (+https://github.com/lou-heraut/MAKAHO)"
 TIMEOUT = httpx.Timeout(120.0, connect=5.0)
 
 # Les reprises. On ne rejoue qu'une demande dont on sait qu'elle n'a rien
-# calculé : connexion impossible, frontal qui n'atteint pas le service
-# (502), refus de quota ou service saturé (429, 503) quand l'attente
-# annoncée est courte. Jamais un délai de lecture dépassé : le service
-# n'annule pas un calcul quand le client s'en va, et le rejouer doublerait
-# une charge que tous les usagers partagent.
-RETRY_STATUSES = frozenset({429, 502, 503})
+# calculé : connexion impossible, refus de quota ou service saturé (429,
+# 503), que card-api oppose avant tout calcul, quand l'attente annoncée
+# est courte. Jamais un délai de lecture dépassé : le service n'annule pas
+# un calcul quand le client s'en va, et le rejouer doublerait une charge
+# que tous les usagers partagent. Pas non plus un 502 du frontal : il
+# arrive aussi quand le service tombe en plein calcul, et le rejouer
+# relancerait ce calcul (revue du 2026-11-11).
+RETRY_STATUSES = frozenset({429, 503})
+
+# Ce qu'un refus veut dire pour MAKAHO, sans code HTTP : le reste de
+# l'application lit `CardApiError.kind`, jamais `status`, pour que les
+# codes du service restent dans ce module (décision 3).
+_KINDS = {
+    401: "key",          # clé de priorité refusée : à régler côté serveur
+    403: "key",
+    404: "no_data",      # aucune station demandée n'a de série
+    409: "job",          # job en échec, pas fini, ou expiré
+    422: "invalid",      # paramètre refusé : une faute dans MAKAHO
+    429: "busy",         # quota ou file pleine : réessayer plus tard
+    503: "busy",
+    504: "source",       # Hub'Eau ne répond pas
+}
 
 
 class CardApiError(Exception):
     """Une demande que card-api a refusée, ou qui ne l'a pas atteint.
 
-    `status` est le code HTTP rendu par le service, ou None s'il n'a pas
-    répondu. `detail` est son explication telle quelle : une chaîne, ou
-    une liste pour un refus de validation (422). `retry_after` est
-    l'attente annoncée en secondes, quand il y en a une.
+    `kind` dit ce que cela veut dire pour MAKAHO : `unreachable` si le
+    service n'a pas répondu, `timeout` si un job a trop tardé (`wait`),
+    sinon une valeur de `_KINDS`, ou `error`.
+    C'est lui que lit le reste de l'application. `detail` est
+    l'explication du service telle quelle : une chaîne, ou une liste pour
+    un refus de validation. `retry_after` est l'attente annoncée en
+    secondes, quand il y en a une. `status`, le code HTTP, ne sert qu'ici
+    et aux tests.
     """
 
-    def __init__(self, status, detail, retry_after=None):
+    def __init__(self, status, detail, retry_after=None, *, kind=None):
         self.status = status
         self.detail = detail
         self.retry_after = retry_after
+        self.kind = kind or ("unreachable" if status is None
+                             else _KINDS.get(status, "error"))
         quoi = f"card-api {status}" if status else "card-api injoignable"
         super().__init__(f"{quoi} : {detail}")
 
@@ -143,9 +166,10 @@ class CardClient:
     # ── Le catalogue ─────────────────────────────────────────────────
 
     def cards(self, **facets):
-        """`/v1/cards`, filtré par facettes (`phenomenon="basses eaux"`).
-        Les noms et valeurs valides sont ceux de `vocabulary` ; un nom
-        inconnu est refusé par le service, pas ignoré."""
+        """`/v1/cards`, filtré par facettes (`phenomenon="low-flows"`).
+        Les noms et valeurs valides sont les clés de `vocabulary`, pas
+        leurs libellés (« basses eaux » est refusé) ; un nom ou une valeur
+        inconnus sont refusés par le service, pas ignorés."""
         return self._get("/v1/cards", facets)
 
     def card(self, card_id, *, lang=None):
@@ -213,6 +237,40 @@ class CardClient:
         résultat n'a pas à occuper la file."""
         self._check(self._send("DELETE", f"/v1/jobs/{job_id}"))
 
+    def wait(self, result, *, timeout=600.0, interval=10.0):
+        """Le résultat d'une demande, en suivant sa file s'il le faut.
+
+        `result` est ce qu'a rendu `trend` : la réponse elle-même, rendue
+        telle quelle, ou un `Ticket` (ou un numéro de job), suivi jusqu'à
+        la fin. Bloquant : pour un script ou le préchauffage, jamais pour
+        une requête de la page, qui tiendrait un fil d'exécution le temps
+        d'une file.
+
+        Entre deux relevés, l'attente que le service annonce
+        (`Retry-After`), sinon `interval`. Un job en échec remonte le refus
+        du service (409). Au-delà de `timeout` secondes d'attente,
+        `CardApiError` de genre `timeout` ; le job, lui, continue :
+        l'abandonner (`cancel_job`) revient à l'appelant. Le délai additionne
+        les attentes, il ne lit pas l'horloge.
+        """
+        if isinstance(result, dict):
+            return result
+        job_id = getattr(result, "job", result)
+        waited = 0.0
+        while True:
+            response = self._send("GET", f"/v1/jobs/{job_id}")
+            self._check(response)
+            status = response.json()["status"]
+            if status in ("done", "failed"):
+                return self.job_result(job_id)
+            if waited >= timeout:
+                raise CardApiError(None, f"job {job_id} toujours {status} "
+                                         f"après {waited:g} s",
+                                   kind="timeout")
+            pause = _retry_after(response) or interval
+            self._sleep(pause)
+            waited += pause
+
     def jobs(self):
         """Les jobs déposés avec la clé. Sans clé, le service répond 401 :
         c'est aussi la façon de vérifier que la clé est acceptée."""
@@ -278,6 +336,26 @@ class CardClient:
         raise CardApiError(response.status_code, detail,
                            _retry_after(response))
 
+
+def client_from_env(environ=None):
+    """Un client réglé par l'environnement : `MAKAHO_CARD_API_URL`
+    (requise) et `MAKAHO_CARD_API_KEY`. Leur description et l'adresse
+    publique du service sont dans `.env.example`, et seulement là.
+
+    `environ` remplace `os.environ`, par exemple pour y joindre ce que
+    lit `dotenv_values(".env")` hors de `flask run`.
+    """
+    env = os.environ if environ is None else environ
+    url = env.get("MAKAHO_CARD_API_URL")
+    if not url:
+        raise RuntimeError(
+            "MAKAHO_CARD_API_URL n'est pas définie : copier .env.example "
+            "en .env et le compléter")
+    key = env.get("MAKAHO_CARD_API_KEY") or None
+    if key is None:
+        log.warning("pas de clé de priorité card-api : la vue complète du "
+                    "RRSE dépasse le plafond public")
+    return CardClient(url, key)
 
 def _joined(values):
     """Une liste de codes devient la liste séparée par des virgules que

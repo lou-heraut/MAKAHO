@@ -22,6 +22,9 @@ dependencies = [
 # du gestionnaire de services.
 [project.optional-dependencies]
 dev = ["pytest", "python-dotenv", "ruff==0.15.22"]
+# scripts/mesure_sampling.py : la mesure B refait VCN10 en local avec
+# stase, parce que card, donc card-api, refuse une fenêtre partielle.
+measure = ["numpy", "pandas", "python-dotenv", "stase"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

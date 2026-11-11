@@ -9,11 +9,13 @@
 > Les mesures des sections 5 et 6 sont **reproductibles** :
 > `scripts/mesure_sampling.py`.
 >
-> **Validité au 2026-11-10.** Le texte ne change pas ; seul ce bandeau
+> **Validité au 2026-11-11.** Le texte ne change pas ; seul ce bandeau
 > se tient à jour. Le `PLAN.md` qu'il cite s'est partagé entre
 > `ROADMAP.md` et `dev/decisions.md`. Trois de ses affirmations ont été
 > démenties depuis (sections 5.5 et 6) : `dev/decisions.md`, « Ce que
-> l'audit du 2026-09-18 a de faux ».
+> l'audit du 2026-09-18 a de faux ». Les mesures des sections 5.2 et
+> 5.3 ont été relancées par card-api le 2026-11-11 et confirmées, à une
+> ou deux stations près : `dev/audits/2026-11-11_sampling-measure.md`.
 
 # AUDIT : état des lieux de MAKAHO avant migration
 

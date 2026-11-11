@@ -18,6 +18,17 @@ Chaque entrée dit ce qui a changé et renvoie au document qui l'explique.
 
 ### Ajouté
 
+- **La mesure de l'audit passe par card-api, et confirme la décision 4
+  (2026-11-11).** `scripts/mesure_sampling.py` (`make measure`) prend
+  ses tendances à `/v1/trend` et ses chroniques à `/v1/chronicles`, au
+  lieu de lire le cache de card-api sur le disque. Relancée : les
+  conclusions de la section 5 de l'audit tiennent, à une ou deux
+  stations près (`dev/audits/2026-11-11_sampling-measure.md`).
+- **Après revue de M1 (2026-11-11)**, le client ne rejoue plus un 502,
+  suit l'attente que le service annonce pour un job (`CardClient.wait`,
+  nouveau), et dit un refus par son sens (`CardApiError.kind`) plutôt
+  que par le code HTTP de card-api, qui ne sort plus de `card_client`.
+  Le détail : `dev/plans/2026-11-11_m1-foundation.md`.
 - **La licence, l'intégration continue et la citation (2026-11-11).**
   `LICENSE` en AGPL-3.0-or-later (texte identique à celui de la 1.0.0)
   et un en-tête dans chaque module. `.github/workflows/tests.yml` lance
