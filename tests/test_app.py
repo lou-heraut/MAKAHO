@@ -5,7 +5,7 @@ import pytest
 
 from makaho import create_app
 from makaho.card_client import client_from_env
-from conftest import VERSIONS
+from conftest import VERSIONS, trend_payload
 
 
 def test_la_page_s_ouvre(app):
@@ -50,3 +50,57 @@ def test_l_environnement_regle_le_client():
     assert str(client._http.base_url) == "https://exemple.test"
     assert not client_from_env({"MAKAHO_CARD_API_URL": "https://exemple.test",
                                 "MAKAHO_CARD_API_KEY": ""}).has_key
+
+
+# ── La tendance pour la page ─────────────────────────────────────────
+
+def test_la_tendance_part_sur_le_rrse_au_protocole_makaho(app, fake):
+    from makaho.stations import station_list
+    fake.on("GET", "/v1/trend", (200, trend_payload()))
+    body = app.test_client().get("/api/trend").get_json()
+    sent = fake.requests[0].url.params
+    assert sent["cards"] == "QA"
+    assert sent["stations"] == ",".join(station_list())
+    assert sent["sampling"] == "preferred"
+    assert "stations_meta" not in sent
+    assert body["variable"]["id"] == "QA"
+    assert body["summary"]["down"] == 2
+
+
+def test_les_positions_se_demandent_une_fois(app, fake):
+    fake.on("GET", "/v1/trend", (200, trend_payload()))
+    app.test_client().get("/api/trend?card=QA&positions=1")
+    assert fake.requests[0].url.params["stations_meta"] == "true"
+
+
+def test_une_demande_en_file_rend_son_numero(app, fake):
+    fake.on("GET", "/v1/trend", (202, {"job": "abc123", "status": "queued"}))
+    response = app.test_client().get("/api/trend")
+    assert response.status_code == 202
+    assert response.get_json()["job"] == "abc123"
+    assert response.headers["Retry-After"]
+
+
+def test_un_job_se_suit_jusqu_a_la_page(app, fake):
+    fake.on("GET", "/v1/jobs/abc123",
+            (200, {"status": "running", "progress": {"done": 1}}),
+            (200, {"status": "done"}))
+    fake.on("GET", "/v1/jobs/abc123/result", (200, trend_payload()))
+    client = app.test_client()
+    assert client.get("/api/jobs/abc123").status_code == 202
+    body = client.get("/api/jobs/abc123").get_json()
+    assert body["summary"]["total"] == 2
+
+
+def test_un_numero_de_job_douteux_ne_part_pas(app, fake):
+    response = app.test_client().get("/api/jobs/a%3Fb")
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "invalid"
+    assert fake.requests == []
+
+
+def test_une_fiche_refusee_par_le_service_est_une_demande_mal_formee(app, fake):
+    fake.on("GET", "/v1/trend", (422, {"detail": "fiche inconnue"}))
+    response = app.test_client().get("/api/trend?card=XYZ")
+    assert response.status_code == 400
+    assert response.get_json()["detail"] == "fiche inconnue"

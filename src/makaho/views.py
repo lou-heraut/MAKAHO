@@ -16,11 +16,19 @@ doit pas quitter le serveur, et tout ce qui vient du service passe par
 `card_client` (décision 3).
 """
 
-from flask import Blueprint, current_app, render_template
+from flask import Blueprint, current_app, render_template, request
 
-from .card_client import CardApiError
+from . import trends
+from .card_client import CardApiError, Ticket
+from .stations import station_list
 
 bp = Blueprint("makaho", __name__)
+
+# La fiche affichée tant que les menus n'existent pas (M3).
+DEFAULT_CARD = "QA"
+
+# Le rythme auquel la page revient voir une demande partie en file.
+POLL_SECONDS = 5
 
 
 def card_client():
@@ -38,9 +46,51 @@ def service():
     return card_client().service()
 
 
+@bp.get("/api/trend")
+def trend():
+    """La tendance d'une fiche sur le RRSE, prête pour la page.
+
+    `positions=1` joint les positions des stations : la page les demande
+    une fois par visite, card-api les relisant chez Hub'Eau à chaque
+    appel. Une demande partie en file rend 202 et son numéro de job.
+    """
+    card = request.args.get("card", DEFAULT_CARD)
+    positions = request.args.get("positions") == "1"
+    result = card_client().trend(station_list(), card,
+                                 stations_meta=positions)
+    if isinstance(result, Ticket):
+        return _pending(result.job, result.status)
+    return _page(result)
+
+
+@bp.get("/api/jobs/<job_id>")
+def job(job_id):
+    """Une demande partie en file : 202 tant qu'elle tourne, la page
+    ensuite."""
+    state = card_client().job(job_id)
+    if state["status"] in ("queued", "running"):
+        return _pending(job_id, state["status"], state.get("progress"))
+    return _page(card_client().job_result(job_id))
+
+
+def _pending(job_id, status, progress=None):
+    body = {"job": job_id, "status": status, "progress": progress}
+    return body, 202, {"Retry-After": str(POLL_SECONDS)}
+
+
+def _page(result):
+    try:
+        return trends.for_page(result)
+    except ValueError as e:
+        # Une fiche à plusieurs variables : la page ne sait pas encore
+        # choisir (M3).
+        return {"error": "invalid", "detail": str(e)}, 400
+
+
 @bp.errorhandler(CardApiError)
 def card_api_error(e):
-    """Un refus ou une panne de card-api, relayé à la page en 502.
+    """Un refus ou une panne de card-api, relayé à la page en 502 (400
+    pour une demande mal formée).
 
     Le 502 dit que la faute est en amont de MAKAHO. Le corps dit ce que
     cela veut dire (`CardApiError.kind` : `no_data`, `busy`,
@@ -51,4 +101,6 @@ def card_api_error(e):
     headers = {}
     if e.retry_after is not None:
         headers["Retry-After"] = str(int(e.retry_after))
-    return body, 502, headers
+    # Une demande mal formée vient de la page (fiche inconnue, numéro de
+    # job invalide) : 400, la faute n'est pas en amont.
+    return body, 400 if e.kind == "invalid" else 502, headers

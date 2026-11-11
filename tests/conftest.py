@@ -78,9 +78,12 @@ def trend_payload(stations=("A1", "B2"), card="QA"):
         "data_fetched_at": "2026-11-01T03:00:00Z",
         "data_fingerprint": "v2:0123456789abcdef",
         "orient": "records",
-        "meta": [{"variable_en": card, "unit_fr": "m^{3}.s^{-1}"}],
+        "meta": [{"variable_en": card, "name_fr": "Débit moyen annuel",
+                  "unit_fr": "m^{3}.s^{-1}", "relative": True,
+                  "palette": " ".join(["#000000"] * 10)}],
         "data": {card: [{"code_station": s, "h": True, "p": 0.01,
-                         "a": -0.5} for s in stations]},
+                         "a": -0.5, "a_relative": -1.2, "n": 50}
+                        for s in stations]},
         "mk": "AR1",
         "level": 0.1,
     }

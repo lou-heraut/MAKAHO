@@ -49,10 +49,8 @@ qui est abandonné l'est en connaissance de cause, dans
 ## M1. Le socle
 
 Un dépôt qui démarre, se déploie, et sait parler au service. Rien
-d'affiché encore. Le squelette et le client de card-api sont faits
-(`CHANGELOG.md`). Le reste se mène dans
-`dev/plans/2026-11-11_m1-foundation.md`, qui garde aussi les questions
-en attente :
+d'affiché encore. Fait (`CHANGELOG.md`, et le détail dans
+`dev/plans/2026-11-11_m1-foundation.md`), sauf :
 
 - Reste à l'utilisateur : vérifier la fiche HAL de la version 1.0.0.
 - Cinq points relevés dans le code de card-api le 2026-11-11, déposés
@@ -64,6 +62,9 @@ en attente :
 - Le déploiement : un serveur WSGI, `compose.yaml`, le service sur un
   port local de la VM de card-api derrière son Apache (décision 8).
   L'adresse de card-api devient alors locale (`.env.example`).
+  **Reporté après M2** (2026-11-11) : rien à montrer avant la carte.
+- Les Actions de GitHub sont désactivées sur le dépôt : à activer par
+  l'utilisateur (Settings, Actions) pour que `tests.yml` tourne.
 - `README.md` dès qu'il y a quelque chose à décrire, au plus tard avec
   la carte (M2).
 
@@ -73,7 +74,8 @@ clé : c'est ce que card-api attendait pour passer en 1.0.0 (son
 
 ## M2. La carte
 
-Le coeur, et la première chose qui doit marcher.
+Le coeur, et la première chose qui doit marcher. En cours :
+`dev/plans/2026-11-11_m2-map.md`.
 
 - **Le fond de tuiles, à choisir en premier.** Leaflet et un vrai fond
   de carte (décision 10), dans la veine du fond de l'application en

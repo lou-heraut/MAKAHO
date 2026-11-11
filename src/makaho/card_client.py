@@ -40,6 +40,7 @@ données) voyage avec elles jusqu'à l'interface.
 
 import logging
 import os
+import re
 import time
 from dataclasses import dataclass
 from importlib.metadata import PackageNotFoundError, version
@@ -225,17 +226,17 @@ class CardClient:
     def job(self, job_id):
         """Statut et progression d'un job : `queued`, `running`, `done`
         ou `failed`."""
-        return self._get(f"/v1/jobs/{job_id}")
+        return self._get(_job_path(job_id))
 
     def job_result(self, job_id):
         """Le résultat gelé d'un job terminé, avec sa provenance. Avant
         `done`, le service répond 409."""
-        return self._get(f"/v1/jobs/{job_id}/result")
+        return self._get(_job_path(job_id, "/result"))
 
     def cancel_job(self, job_id):
         """Abandonner un job : un calcul dont plus personne n'attend le
         résultat n'a pas à occuper la file."""
-        self._check(self._send("DELETE", f"/v1/jobs/{job_id}"))
+        self._check(self._send("DELETE", _job_path(job_id)))
 
     def wait(self, result, *, timeout=600.0, interval=10.0):
         """Le résultat d'une demande, en suivant sa file s'il le faut.
@@ -258,7 +259,7 @@ class CardClient:
         job_id = getattr(result, "job", result)
         waited = 0.0
         while True:
-            response = self._send("GET", f"/v1/jobs/{job_id}")
+            response = self._send("GET", _job_path(job_id))
             self._check(response)
             status = response.json()["status"]
             if status in ("done", "failed"):
@@ -356,6 +357,20 @@ def client_from_env(environ=None):
         log.warning("pas de clé de priorité card-api : la vue complète du "
                     "RRSE dépasse le plafond public")
     return CardClient(url, key)
+
+# Un numéro de job vient de la page avant d'entrer dans une adresse : il
+# ne peut contenir ni `/`, ni `?`, ni `..`, qui viseraient une autre
+# route du service avec la clé de MAKAHO. card-api en fabrique de seize
+# caractères hexadécimaux ; on accepte plus large, pas plus dangereux.
+_JOB_ID = re.compile(r"[A-Za-z0-9_-]{1,64}")
+
+
+def _job_path(job_id, suffix=""):
+    if not isinstance(job_id, str) or not _JOB_ID.fullmatch(job_id):
+        raise CardApiError(None, f"numéro de job invalide : {job_id!r}",
+                           kind="invalid")
+    return f"/v1/jobs/{job_id}{suffix}"
+
 
 def _joined(values):
     """Une liste de codes devient la liste séparée par des virgules que

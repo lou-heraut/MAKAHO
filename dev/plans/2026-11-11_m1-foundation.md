@@ -1,8 +1,8 @@
-> **Statut : en cours (ouvert le 2026-11-11).** Fichier de travail de la
-> fin du chantier M1 de `ROADMAP.md`, mené en autonomie à la demande de
-> l'utilisateur : les étapes, ce qui a été décidé en route et pourquoi,
-> et les questions à lui poser, notées ici pour ne pas les perdre. Une
-> étape faite reste cochée ici et entre dans `CHANGELOG.md`.
+> **Statut : terminé le 2026-11-11, sauf le déploiement.** Fichier de
+> travail de la fin du chantier M1 de `ROADMAP.md`, mené en autonomie à
+> la demande de l'utilisateur : les étapes, ce qui a été décidé en route
+> et pourquoi, et les questions posées. Le déploiement attend qu'il y ait
+> une carte à montrer ; il reste dans `ROADMAP.md`.
 
 # M1, la fin du socle
 
@@ -27,8 +27,9 @@ card-api et ses tests hors ligne et live, la liste du RRSE.
 6. [x] **`scripts/mesure_sampling.py` par card-api**, puis la relancer et
    comparer aux chiffres de l'audit (section 5).
 7. [x] **Revue** par un sous-agent sur l'ensemble de M1, puis corrections.
-8. [ ] **Déploiement** : à la fin, avec l'utilisateur (port et adresse
-   sur la VM).
+8. [ ] **Déploiement** : reporté après la carte (M2), quand il y aura
+   quelque chose à montrer (2026-11-11) ; avec l'utilisateur, qui donne
+   le port et l'adresse sur la VM. Suivi dans `ROADMAP.md`.
 
 ## Décisions prises en route
 
