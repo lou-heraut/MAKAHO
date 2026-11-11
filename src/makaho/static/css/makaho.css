@@ -1,0 +1,73 @@
+/* MAKAHO : la carte occupe l'écran, le reste se fait discret. */
+
+:root {
+  --ink: #222;
+  --muted: #666;
+  --panel: rgba(255, 255, 255, 0.92);
+  --stroke: #333;
+  --gap: 12px;
+  font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink);
+}
+
+html, body { height: 100%; margin: 0; }
+body { background: #fff; }
+#map { position: absolute; inset: 0; background: #fff; }
+
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* Le fond de carte (décision 10) : le Plan IGN passé en gris clair, que
+   l'estompage du relief assombrit sans le masquer. */
+.basemap-grey { filter: grayscale(1); }
+.basemap-relief { mix-blend-mode: multiply; }
+
+/* ── Les panneaux ───────────────────────────────────────────────────── */
+
+.panel {
+  position: absolute;
+  z-index: 1000;
+  background: var(--panel);
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  padding: 10px 12px;
+}
+
+.title { top: var(--gap); left: 56px; max-width: min(460px, calc(100vw - 80px)); }
+.title .brand { margin: 0; font-size: 11px; letter-spacing: 0.12em; color: var(--muted); }
+.title h1 { margin: 2px 0 0; font-size: 16px; font-weight: 600; }
+.title .subtitle { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+
+.legend { bottom: 28px; left: var(--gap); width: 270px; font-size: 12px; }
+.legend .shapes { list-style: none; margin: 0 0 6px; padding: 0; }
+.legend .shapes li { display: flex; align-items: center; gap: 6px; }
+.legend .shapes .marker { width: 14px; height: 14px; --fill: #bbb; }
+.legend .unit { margin: 6px 0 2px; color: var(--muted); }
+.legend .summary { margin: 6px 0 0; }
+.legend .provenance { margin: 4px 0 0; font-size: 11px; color: var(--muted); }
+
+.status {
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  margin: 0; font-size: 15px;
+}
+.status.error { color: #8a1c1c; max-width: 360px; }
+
+/* ── Les marqueurs : la forme dit le verdict, la couleur la pente ──── */
+
+.marker { display: block; overflow: visible; }
+.station .marker { width: 100%; height: 100%; }
+.leaflet-tooltip .code { color: var(--muted); font-size: 11px; }
+.marker use { fill: var(--fill, #bbb); stroke: var(--stroke); stroke-width: 1.1px; }
+.station { cursor: pointer; }
+.station.gap .marker use { fill: #fff; stroke: #999; stroke-dasharray: 2 2; }
+
+/* ── La barre de couleur et son histogramme ────────────────────────── */
+
+#colorbar svg { display: block; width: 100%; height: auto; }
+#colorbar .bar { fill: #9aa3a8; }
+#colorbar .tick { font-size: 10px; fill: var(--ink); text-anchor: middle; }
+#colorbar .class { stroke: #fff; stroke-width: 0.5px; }
+
+@media (max-width: 600px) {
+  .title { left: 56px; right: var(--gap); max-width: none; }
+  .legend { left: var(--gap); right: var(--gap); width: auto; bottom: 24px; }
+}

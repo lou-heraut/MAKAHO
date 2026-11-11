@@ -104,3 +104,16 @@ def test_une_fiche_refusee_par_le_service_est_une_demande_mal_formee(app, fake):
     response = app.test_client().get("/api/trend?card=XYZ")
     assert response.status_code == 400
     assert response.get_json()["detail"] == "fiche inconnue"
+
+
+def test_la_page_sert_leaflet_et_son_script_depuis_makaho(app):
+    """Rien n'est chargé d'un CDN : Leaflet et le script sont servis par
+    MAKAHO (static/vendor/README.md)."""
+    client = app.test_client()
+    html = client.get("/").get_data(as_text=True)
+    for path in ("/static/vendor/leaflet-1.9.4/leaflet.js",
+                 "/static/vendor/leaflet-1.9.4/leaflet.css",
+                 "/static/js/makaho.js", "/static/css/makaho.css"):
+        assert path in html
+        assert client.get(path).status_code == 200
+    assert "cdn" not in html.lower() and "unpkg" not in html.lower()

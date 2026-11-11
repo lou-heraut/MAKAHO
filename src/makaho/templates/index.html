@@ -3,13 +3,43 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MAKAHO</title>
+  <title>MAKAHO, tendances hydrologiques</title>
+  <meta name="description" content="Tendances des débits des cours d'eau français peu influencés par l'homme : test de Mann-Kendall et pente de Sen sur les stations du RRSE.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet-1.9.4/leaflet.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/makaho.css') }}">
 </head>
 <body>
-  <main>
-    <h1>MAKAHO</h1>
-    <p>Réécriture en cours. L'application en service est sur
-      <a href="https://makaho.sk8.inrae.fr/">makaho.sk8.inrae.fr</a>.</p>
-  </main>
+  <!-- Les trois formes des marqueurs, définies une fois : chaque station
+       les reprend par <use>, et l'export de carte (M6) pourra faire de même. -->
+  <svg class="sprite" aria-hidden="true">
+    <symbol id="m-up" viewBox="0 0 20 20"><path d="M10 2.5 L18 16.5 L2 16.5 Z"/></symbol>
+    <symbol id="m-down" viewBox="0 0 20 20"><path d="M10 17.5 L18 3.5 L2 3.5 Z"/></symbol>
+    <symbol id="m-none" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6.5"/></symbol>
+  </svg>
+
+  <div id="map" aria-label="Carte des stations"></div>
+
+  <header class="panel title">
+    <p class="brand">MAKAHO</p>
+    <h1 id="title">Tendances hydrologiques</h1>
+    <p id="subtitle" class="subtitle"></p>
+  </header>
+
+  <section class="panel legend" id="legend" hidden>
+    <ul class="shapes">
+      <li><svg class="marker up"><use href="#m-up"/></svg> hausse significative</li>
+      <li><svg class="marker none"><use href="#m-none"/></svg> non significative</li>
+      <li><svg class="marker down"><use href="#m-down"/></svg> baisse significative</li>
+    </ul>
+    <p class="unit" id="unit"></p>
+    <div id="colorbar"></div>
+    <p class="summary" id="summary"></p>
+    <p class="provenance" id="provenance"></p>
+  </section>
+
+  <p class="panel status" id="status" role="status">Calcul des tendances…</p>
+
+  <script src="{{ url_for('static', filename='vendor/leaflet-1.9.4/leaflet.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/makaho.js') }}"></script>
 </body>
 </html>
