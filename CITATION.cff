@@ -1,0 +1,74 @@
+cff-version: 1.2.0
+message: >-
+  Si vous utilisez MAKAHO ou ses résultats, merci de citer ce dépôt.
+  La version 1.0.0, l'application R Shiny, reste citable par son tag
+  v1.0.0, archivé sur Software Heritage.
+type: software
+title: "MAKAHO : tendances hydrologiques des stations de référence françaises"
+abstract: >-
+  MAKAHO (MAnn-Kendall Analysis of Hydrological Observations) est une
+  carte interactive des tendances des débits sur les stations
+  hydrométriques françaises peu influencées par l'homme, le Réseau de
+  Référence pour la Surveillance des Étiages. Test de Mann-Kendall et
+  pente de Sen, sur des variables hydrologiques standardisées (fiches
+  CARD) calculées par le service card-api à partir des débits Hub'Eau.
+authors:
+  - family-names: "Héraut"
+    given-names: "Louis"
+    email: "louis.heraut@inrae.fr"
+    affiliation: "INRAE, UR RiverLy, Villeurbanne, France"
+    orcid: "https://orcid.org/0009-0006-4372-0923"
+  - family-names: "Lang"
+    given-names: "Michel"
+    email: "michel.lang@inrae.fr"
+    affiliation: "RiverLy, INRAE, France"
+    orcid: "https://orcid.org/0000-0003-1417-1495"
+  - family-names: "Renard"
+    given-names: "Benjamin"
+    email: "benjamin.renard@inrae.fr"
+    affiliation: "RECOVER, INRAE, France"
+    orcid: "https://orcid.org/0000-0001-8447-5430"
+  - family-names: "Vidal"
+    given-names: "Jean-Philippe"
+    email: "jean-philippe.vidal@inrae.fr"
+    affiliation: "RiverLy, INRAE, France"
+    orcid: "https://orcid.org/0000-0002-3748-6150"
+  - family-names: "Sauquet"
+    given-names: "Éric"
+    email: "eric.sauquet@inrae.fr"
+    affiliation: "RiverLy, INRAE, France"
+    orcid: "https://orcid.org/0000-0001-9539-7730"
+  - family-names: "Giuntoli"
+    given-names: "Ignazio"
+    email: "i.giuntoli@isac.cnr.it"
+    affiliation: "CNR-ISAC, Bologne, Italie"
+    orcid: "https://orcid.org/0000-0001-8700-7026"
+  - family-names: "Bard"
+    given-names: "Antoine"
+    email: "antoine.bard@edsb.fr"
+    affiliation: "EDSB, Université Louis Pasteur, Briançon, France"
+version: "2.0.0.dev0"
+repository-code: "https://github.com/lou-heraut/MAKAHO"
+license: "AGPL-3.0-or-later"
+keywords:
+  - hydrologie
+  - débits
+  - étiage
+  - tendance
+  - Mann-Kendall
+  - changement climatique
+references:
+  - type: article
+    title: "Low flows in France and their relationship to large scale climate indices"
+    authors:
+      - family-names: "Giuntoli"
+        given-names: "Ignazio"
+      - family-names: "Renard"
+        given-names: "Benjamin"
+      - family-names: "Vidal"
+        given-names: "Jean-Philippe"
+      - family-names: "Bard"
+        given-names: "Antoine"
+    journal: "Journal of Hydrology"
+    year: 2013
+    doi: "10.1016/j.jhydrol.2012.12.038"

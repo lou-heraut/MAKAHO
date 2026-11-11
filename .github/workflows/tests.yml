@@ -1,0 +1,33 @@
+name: tests
+
+# Lancer les tests et le lint, rien d'autre. Cela tourne sur une machine
+# jetable de GitHub : `make install` n'installe que là, et rien ne touche
+# la production. Le déploiement reste un geste à la main sur la VM.
+#
+# Les cibles du Makefile, et pas des commandes recopiées ici : ce qui
+# passe en local passe ici, et inversement.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    name: pytest et ruff (py${{ matrix.python-version }})
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: make install
+      # Hors ligne : card-api est simulé (tests/conftest.py). Les tests
+      # live restent sautés, MAKAHO_LIVE absent : un CI qui dépend d'un
+      # service en ligne vire au rouge le jour d'une maintenance.
+      - run: make test
+      - run: make lint

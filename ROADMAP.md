@@ -50,7 +50,9 @@ qui est abandonné l'est en connaissance de cause, dans
 
 Un dépôt qui démarre, se déploie, et sait parler au service. Rien
 d'affiché encore. Le squelette et le client de card-api sont faits
-(`CHANGELOG.md`) ; reste :
+(`CHANGELOG.md`). Le reste se mène dans
+`dev/plans/2026-11-11_m1-foundation.md`, qui garde aussi les questions
+en attente :
 
 - Reste à l'utilisateur : vérifier la fiche HAL de la version 1.0.0.
 - Trois points relevés dans le code de card-api le 2026-11-11, déposés
@@ -61,9 +63,8 @@ d'affiché encore. Le squelette et le client de card-api sont faits
 - Le déploiement : un serveur WSGI, `compose.yaml`, le service sur un
   port local de la VM de card-api derrière son Apache (décision 8).
   L'adresse de card-api devient alors locale (`.env.example`).
-- Hygiène : `README.md` dès qu'il y a quelque chose à décrire,
-  `CITATION.cff`, `codemeta.json`, `AUTHORS`, `LICENSE` en
-  AGPL-3.0-or-later, code de conduite, CI qui lance tests et linter.
+- `README.md` dès qu'il y a quelque chose à décrire, au plus tard avec
+  la carte (M2).
 - `scripts/mesure_sampling.py` lit encore le cache de card-api au format
   CSV d'avant sa 0.8.0, devenu Parquet depuis : le faire passer par
   `/v1/chronicles` (décision 2) avant de relancer la mesure.

@@ -55,6 +55,8 @@ dans les documents partent de la racine du dépôt.
                     .env.example, et seulement là.
   tests/            hors ligne, sur le card-api simulé de conftest.py ;
                     test_live.py vérifie la simulation (make test-live).
+  scripts/          set_version.py : le numéro vit dans pyproject.toml,
+                    jamais recopié à la main (test_citation.py).
   ```
 
   `make` liste les commandes.

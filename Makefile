@@ -23,4 +23,4 @@ test-live:   ## tests contre le card-api en ligne, avec la clé de .env
 	MAKAHO_LIVE=1 $(PY) -m pytest tests/test_live.py -v
 
 lint:        ## lint (ruff, version épinglée dans pyproject)
-	$(PY) -m ruff check src tests
+	$(PY) -m ruff check src tests scripts

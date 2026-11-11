@@ -6,8 +6,11 @@ Changelog](https://keepachangelog.com/fr/1.1.0/).
 **Numérotation.** La 1.0.0 est l'application R Shiny, figée au tag
 `v1.0.0` ; elle n'avait pas de journal. La réécriture en Flask sur
 card-api sera publiée en 2.0.0 le jour de la bascule (`ROADMAP.md`,
-M10) : d'ici là, tout s'inscrit sous « Non publié ». La règle de coupe
-qui suivra la 2.0.0 s'écrira avec elle.
+M10) : d'ici là, tout s'inscrit sous « Non publié », et le paquet porte
+`2.0.0.dev0`. La règle de coupe qui suivra la 2.0.0 s'écrira avec elle.
+Le numéro vit dans `pyproject.toml` ; `scripts/set_version.py` le
+propage à `CITATION.cff` et `codemeta.json`, et `--etat` donne les faits
+avant de couper.
 
 Chaque entrée dit ce qui a changé et renvoie au document qui l'explique.
 
@@ -15,6 +18,14 @@ Chaque entrée dit ce qui a changé et renvoie au document qui l'explique.
 
 ### Ajouté
 
+- **La licence, l'intégration continue et la citation (2026-11-11).**
+  `LICENSE` en AGPL-3.0-or-later (texte identique à celui de la 1.0.0)
+  et un en-tête dans chaque module. `.github/workflows/tests.yml` lance
+  `make test` et `make lint` sur GitHub, sans rien déployer.
+  `CITATION.cff`, `codemeta.json` et `AUTHORS` reprennent les crédits de
+  la 1.0.0 ; `CODE_OF_CONDUCT.md` aussi. Le numéro de version a un seul
+  endroit (« Numérotation », plus haut), tenu par
+  `tests/test_citation.py`.
 - **Le squelette de l'application et le client de card-api
   (2026-11-11).** Le paquet `makaho` sous `src/`, fabriqué par
   `create_app`, avec `pyproject.toml` et un `Makefile` (`make` liste
