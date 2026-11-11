@@ -10,7 +10,7 @@
 
 ## Les décisions de la migration
 
-Arrêtées entre le 2026-09-18 et le 2026-11-10.
+Arrêtées entre le 2026-09-18 et le 2026-11-11.
 
 1. **On sort de Shiny pour son modèle de concurrence**, pas parce que le
    calcul est lourd. Une unité d'isolation par personne connectée n'est
@@ -70,6 +70,24 @@ Arrêtées entre le 2026-09-18 et le 2026-11-10.
    l'application en ligne. Les pistes techniques de `ROADMAP.md`, tirées
    de l'audit, sont des propositions que l'implémentation peut remplacer
    par mieux ; seules les décisions de ce fichier engagent.
+10. **Leaflet et un fond de carte complet, pas une carte dessinée en
+    SVG** (2026-11-11, voulu par l'utilisateur). MAKAHO montre des
+    observations de terrain : il faut pouvoir situer une station sur
+    sa rivière, ce que des contours de France et de cours d'eau ne
+    permettent pas, et une carte dessinée obligerait à tenir ses
+    couches. L'export propre n'oblige pas à y renoncer : la figure
+    exportée se compose depuis les données, sur le fond de tuiles
+    (`ROADMAP.md`, M6).
+    **Le fond, choisi le même jour à l'écran** : le Plan IGN de la
+    Géoplateforme en gris clair, multiplié par l'estompage du relief,
+    les rivières à partir d'un zoom régional. Il est neutre et léger
+    comme celui de la version R, et laisse la place aux points ; il
+    est français et sans jeton. Écartés : CARTO, dont les tuiles
+    portent depuis peu un filigrane « API KEY REQUIRED » sans clé
+    (constaté le 2026-11-11) ; Jawg, le fournisseur de la version R
+    (audit, 4.8), qui demande un jeton ; le Plan IGN en couleur et
+    OpenStreetMap standard, trop chargés pour ne pas concurrencer les
+    marqueurs.
 
 ## Les principes de conduite (2026-09-18)
 
@@ -78,8 +96,10 @@ Arrêtées entre le 2026-09-18 et le 2026-11-10.
    service, c'est un défaut.
 2. **Sobre par défaut.** Flask, HTML, CSS et JavaScript écrits à la
    main, Leaflet. Pas de framework front, pas d'étape de construction,
-   pas de base de données tant que rien ne la réclame. Patron existant
-   et en production : MEANDRE (`../../MEANDRE_project/MEANDRE/`).
+   pas de base de données tant que rien ne la réclame. MEANDRE
+   (`../../MEANDRE_project/MEANDRE/`) est l'exemple qui a poussé à
+   quitter Shiny pour Flask, pas un patron de code : sa structure ne se
+   reprend pas (2026-11-11, voulu par l'utilisateur).
 3. **Ce qui manque à un dépôt se corrige dans ce dépôt.** Le
    contournement local est la dette de demain.
 4. **On ne traduit pas, on refait.** Les 6 304 lignes de R de la

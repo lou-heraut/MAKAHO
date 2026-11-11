@@ -8,6 +8,7 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .ruff_cache/
+*.egg-info/
 
 # Ce que l'utilisateur veut sortir du git status
 bac/

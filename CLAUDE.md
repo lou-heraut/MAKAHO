@@ -39,6 +39,25 @@ dans les documents partent de la racine du dépôt.
   l'interface. À relancer plutôt qu'à croire.
 - Principes documentaires communs aux dépôts de l'écosystème :
   `../../CARD_project/card/dev/decisions.md`.
+- Le code, une ligne par module et ce qu'il ne faut pas casser :
+
+  ```
+  src/makaho/
+    card_client.py  LE SEUL module qui connaisse card-api (décision 3) :
+                    aucune URL du service ni code HTTP ailleurs. Ne
+                    rejoue jamais un délai de lecture dépassé (le calcul
+                    continue côté service).
+    views.py        les routes. La page ne parle jamais à card-api : la
+                    clé ne quitte pas le serveur.
+    stations.py     les listes de station_lists/, seule donnée locale :
+                    un code par ligne, la source en lignes # en tête.
+    __init__.py     create_app. L'environnement est décrit dans
+                    .env.example, et seulement là.
+  tests/            hors ligne, sur le card-api simulé de conftest.py ;
+                    test_live.py vérifie la simulation (make test-live).
+  ```
+
+  `make` liste les commandes.
 - `README.md` : à écrire quand il y aura un logiciel à décrire. Un
   README qui décrit un logiciel qui n'existe pas est un mensonge daté.
 
@@ -62,10 +81,10 @@ les paquets R de la version 1.0.0. **Lire le `CLAUDE.md` de card-api
 avant de toucher au client** : il porte les règles du service et les
 arbitrages qui expliquent sa forme.
 
-Patron technique de référence, en production et maintenu par
-l'utilisateur : `../../MEANDRE_project/MEANDRE/`
-(`meandre.explore2.inrae.fr`), Flask mince, `static/` en trois dossiers,
-pas d'étape de construction.
+MEANDRE (`../../MEANDRE_project/MEANDRE/`, `meandre.explore2.inrae.fr`),
+du même auteur, est l'exemple qui a donné envie de quitter Shiny pour
+Flask. **Ce n'est pas un modèle de code** : sa structure ne se reprend
+pas. Ses exports de carte restent une référence d'usage pour M6.
 
 L'application R est dans `../MAKAHO/`. **Ne pas la modifier** : elle est
 en production. **Ne pas lire son code pour écrire le nouveau** : elle
@@ -99,14 +118,18 @@ Détaillées avec leur raison dans `dev/decisions.md`. En bref :
 9. **La réécriture part de zéro.** L'application R dit ce qu'il faut
    permettre, pas comment le faire ; les pistes techniques de
    `ROADMAP.md` sont des propositions.
+10. **Leaflet et un vrai fond de carte**, pas une carte dessinée en
+    SVG : MAKAHO montre des observations de terrain, qu'il faut pouvoir
+    situer. Le fond : Plan IGN en gris et relief, de la Géoplateforme,
+    sans jeton.
 
 ## Ce qui ne se déduit pas du code
 
 - **Le RRSE n'est pas un attribut Hub'Eau.** Les 228 stations sont un
   choix d'étude publié (`hal.science/hal-00833431`). La liste est une
-  donnée de MAKAHO, à versionner et à sourcer. Vérifié le 2026-09-18 :
-  identique à la ligne près entre `meta_RRSE.fst` du dépôt R et
-  `examples/stations_rrse.txt` de card-api.
+  donnée de MAKAHO, versionnée avec sa source dans
+  `src/makaho/station_lists/rrse.txt`. Le réseau a évolué depuis
+  l'article ; MAKAHO garde cette liste, l'actualiser viendra plus tard.
 - **Les codes de stations sont déjà post-refonte Hydro.** Aucun travail
   de correspondance vers Hub'Eau.
 - **Le protocole MAKAHO, c'est `sampling=preferred`.** L'application

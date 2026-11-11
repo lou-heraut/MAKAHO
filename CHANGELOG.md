@@ -15,6 +15,22 @@ Chaque entrée dit ce qui a changé et renvoie au document qui l'explique.
 
 ### Ajouté
 
+- **Le squelette de l'application et le client de card-api
+  (2026-11-11).** Le paquet `makaho` sous `src/`, fabriqué par
+  `create_app`, avec `pyproject.toml` et un `Makefile` (`make` liste
+  les commandes). `src/makaho/card_client.py` est le seul module qui
+  connaisse card-api (décision 3) : la clé en en-tête, `sampling=
+  preferred` envoyé explicitement, les autres défauts laissés au
+  service, une demande partie en file rendue comme ticket, des reprises
+  limitées aux demandes qui n'ont rien calculé. Tenu par des tests hors
+  ligne sur un card-api simulé (`tests/`) ; `make test-live` vérifie la
+  simulation contre le service en ligne : passé le jour même, en accès
+  public puis avec la clé. M1 dans `ROADMAP.md` dit ce qui reste.
+- **La liste des 228 stations du RRSE (2026-11-11)**, seule donnée
+  locale de MAKAHO, dans `src/makaho/station_lists/rrse.txt` : extraite
+  de la table des stations de l'application R, identique à celle de
+  card-api, avec sa source en tête (Giuntoli et al. 2013,
+  `hal-00833431`). `makaho.stations` la lit.
 - **`.env.example` et `.gitignore` (2026-11-10)**, pour la clé de
   priorité `MAKAHO` de card-api : le jeton vit dans `.env`, que git
   ignore comme tout `.env*` sauf le modèle.
@@ -29,6 +45,15 @@ Chaque entrée dit ce qui a changé et renvoie au document qui l'explique.
 
 ### Documentation
 
+- **Le fond de carte et MEANDRE (2026-11-11).** Décision 10 de
+  `dev/decisions.md` : Leaflet et un vrai fond de carte, parce que
+  MAKAHO montre des observations de terrain qu'il faut pouvoir situer ;
+  l'export de cartes (M6) se compose depuis les données, sur ce fond.
+  Le fond est choisi après essais à l'écran : le Plan IGN de la
+  Géoplateforme en gris clair et l'estompage du relief, sans jeton.
+  MEANDRE n'est plus présenté comme un patron de code : c'est l'exemple
+  qui a poussé à quitter Shiny, et ses exports restent une référence
+  d'usage.
 - **Les objectifs de la 2.0.0 (2026-11-10)**, en tête de `ROADMAP.md` :
   pour qui, droit au but sur le modèle d'earth.nullschool.net, export de
   données et de cartes, résumé statistique court. Les chantiers M2, M3,

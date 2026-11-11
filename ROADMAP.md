@@ -8,7 +8,7 @@
 > propositions, que l'implémentation peut remplacer par mieux
 > (décision 9). Pas de calendrier : l'ordre suit les dépendances.
 
-# Feuille de route de MAKAHO (mise à jour 2026-11-10)
+# Feuille de route de MAKAHO (mise à jour 2026-11-11)
 
 La réécriture de l'application R Shiny (tag `v1.0.0`) en Flask sur
 card-api, publiée en 2.0.0 à la bascule (M10).
@@ -49,25 +49,18 @@ qui est abandonné l'est en connaissance de cause, dans
 ## M1. Le socle
 
 Un dépôt qui démarre, se déploie, et sait parler au service. Rien
-d'affiché encore.
+d'affiché encore. Le squelette et le client de card-api sont faits
+(`CHANGELOG.md`) ; reste :
 
 - Reste à l'utilisateur : vérifier la fiche HAL de la version 1.0.0.
-- Arborescence sur le patron de MEANDRE (`../../MEANDRE_project/MEANDRE/`) :
-  `app.py`, `templates/`, `static/{css,js,resources}`, `Makefile`,
-  `compose.yaml`. Déploiement sur celui de card-api : service sur un
-  port local, frontal Apache de la VM (décision 8).
-- **`card_client.py` : le seul module qui connaisse card-api.** Il
-  expose le catalogue, les stations, les séries et les tendances, porte
-  la clé et les reprises sur échec, et **relaie les versions**
-  (`card_commit`, `stase_commit`, SWHID, `data_fetched_at`,
-  `data_fingerprint`) jusqu'à l'interface. C'est la frontière qui rend
-  la décision 3 réversible. Il lit `MAKAHO_CARD_API_URL` et
-  `MAKAHO_CARD_API_KEY` (`.env.example`) ; l'adresse est publique par
-  défaut, locale si MAKAHO tourne sur la VM de card-api. Ce que le
-  service lui impose : `dev/decisions.md`.
-- Seule donnée locale : **la liste des 228 codes RRSE**, versionnée et
-  sourcée (référence HAL), parce que c'est un choix d'étude et non un
-  attribut Hub'Eau.
+- Trois points relevés dans le code de card-api le 2026-11-11, déposés
+  à sa racine (`message-makaho_2026-11-11.md`), à traiter depuis une
+  session ouverte là-bas : le référentiel des stations lu chez Hub'Eau
+  à chaque appel (cf. M2), les plafonds d'une clé illisibles dans
+  `/v1`, un renvoi périmé au `PLAN.md` d'ici.
+- Le déploiement : un serveur WSGI, `compose.yaml`, le service sur un
+  port local de la VM de card-api derrière son Apache (décision 8).
+  L'adresse de card-api devient alors locale (`.env.example`).
 - Hygiène : `README.md` dès qu'il y a quelque chose à décrire,
   `CITATION.cff`, `codemeta.json`, `AUTHORS`, `LICENSE` en
   AGPL-3.0-or-later, code de conduite, CI qui lance tests et linter.
@@ -75,21 +68,36 @@ d'affiché encore.
   CSV d'avant sa 0.8.0, devenu Parquet depuis : le faire passer par
   `/v1/chronicles` (décision 2) avant de relancer la mesure.
 
-card-api attend que M1 ait tourné sur son contrat pour passer en 1.0.0
-(son `dev/decisions.md`) : ce qui gêne en écrivant `card_client.py` se
-signale là-bas, avant cette version.
+Le client a tourné sur le contrat de card-api le 2026-11-11, avec la
+clé : c'est ce que card-api attendait pour passer en 1.0.0 (son
+`dev/decisions.md`). Ce qui gênait est dans le message déposé chez lui.
 
 ## M2. La carte
 
 Le coeur, et la première chose qui doit marcher.
 
-- **Le fond de carte, à trancher en premier.** Soit Leaflet et des
-  tuiles d'un fournisseur sans jeton (OpenStreetMap, CartoDB), soit une
-  carte dessinée en SVG depuis des contours (France, rivières), comme
-  MEANDRE. La seconde ne dépend d'aucun fournisseur et s'exporte
-  proprement en vectoriel (M6) ; la première donne le zoom et le
-  repérage fin. Un seul fond, sobre : les trois thèmes de la version R
-  ne reviennent pas. S'il faut un jeton, il passe par l'environnement.
+- **Le fond de tuiles, à choisir en premier.** Leaflet et un vrai fond
+  de carte (décision 10), dans la veine du fond de l'application en
+  ligne : neutre et léger, il laisse la place aux points et à
+  l'analyse, comme le fond d'un graphique scientifique. Sans jeton, et
+  français de préférence (2026-11-11, voulu par l'utilisateur). Un seul
+  fond : les trois thèmes de la version R ne reviennent pas.
+  - **Choisi le 2026-11-11** (décision 10), après essais à l'écran : le
+    Plan IGN de la Géoplateforme passé en gris clair, multiplié par
+    l'estompage du relief, et les rivières (couche Hydrographie) à
+    partir d'un zoom régional. Réglages essayés : dans Leaflet, filtre
+    CSS `grayscale` et opacité 0,4 sur le plan sur fond blanc,
+    `mix-blend-mode: multiply` et opacité 0,6 sur l'estompage, rivières
+    à 0,45 dès le zoom 8.
+  - La Géoplateforme annonce un accès public, sans frais, sous les
+    conditions générales de `cartes.gouv.fr/cgu` ; la licence de chaque
+    couche reste à lire. Ses tuiles autorisent le dessin dans un canvas
+    (en-tête CORS, vérifié le 2026-11-11), ce dont l'export a besoin
+    (M6) ; le gris et la multiplication s'y refont.
+- **Les positions des stations** viennent de card-api : `stations_meta`
+  joint à une tendance le référentiel Hub'Eau (libellé, longitude,
+  latitude). Le service le redemande à Hub'Eau à chaque appel : le
+  demander une fois par visite, pas à chaque recalcul.
 - **Marqueurs en CSS, pas en fichiers.** Un sprite de trois symboles
   (`<symbol>` : triangle haut, triangle bas, rond) défini une fois, un
   `divIcon` par station avec un `<use>`, la couleur en propriété CSS
@@ -170,10 +178,17 @@ conférences.
   ce soit.
 - **La carte** : en PNG, SVG, PDF, voire HTML autonome, composée avec
   sa barre de couleur, son titre et ses paramètres, et accompagnée de
-  ses données. Modèle : MEANDRE (`exportSVG` et `exportData` dans
-  `../../MEANDRE_project/MEANDRE/static/js/script.js`), où le nom du
-  fichier porte les paramètres et l'archive sa notice. Remplace le mode
-  capture d'écran de la version R.
+  ses données. Proposition (2026-11-11) : une figure composée par
+  MAKAHO depuis ses données, pas une capture d'écran. Les tuiles
+  affichées forment le fond, en image ; tout le reste est redessiné en
+  vectoriel par-dessus : les marqueurs depuis leurs coordonnées, avec
+  le même jeu de symboles qu'à l'écran (M2), la barre de couleur, le
+  titre, les paramètres, l'attribution du fond. Le PNG sort d'un
+  canvas, le SVG garde le vectoriel au-dessus de l'image de fond
+  (retouchable dans Inkscape), le PDF se tire du SVG. Référence
+  d'usage : les exports de MEANDRE, où le nom du fichier porte les
+  paramètres et l'archive sa notice. Remplace le mode capture d'écran
+  de la version R.
 - **Écrit par requête, pas dans un répertoire partagé** (audit, 4.9).
 - `/v1/extract.csv` et `/v1/trend.csv` portent déjà leur provenance en
   lignes de commentaire : à réutiliser plutôt qu'à refaire.
@@ -234,6 +249,11 @@ la 2.0.0 en ligne.
 
 Posées, pas tranchées. Aucune ne bloque le démarrage.
 
+- **L'actualisation de la liste RRSE.** Le réseau a évolué depuis
+  l'article qui le présente (236 stations en 2013) ; MAKAHO garde les
+  228 de sa version 1.0.0 (`src/makaho/station_lists/rrse.txt`).
+  L'actualiser est un sujet pour plus tard (2026-11-11, dit par
+  l'utilisateur).
 - **Comment mesurer l'usage de MAKAHO correctement.** Question
   légitime, pour plus tard. Elle touche à l'évaluation d'impact, donc
   aux dossiers de financement, et elle se pose mieux une fois qu'on voit
