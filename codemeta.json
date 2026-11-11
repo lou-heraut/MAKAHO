@@ -53,7 +53,7 @@
     {
       "type": "Role",
       "schema:author": "https://orcid.org/0000-0003-1417-1495",
-      "roleName": "Management"
+      "roleName": "Scientific referent"
     },
     {
       "id": "https://orcid.org/0000-0001-8447-5430",
@@ -69,12 +69,7 @@
     {
       "type": "Role",
       "schema:author": "https://orcid.org/0000-0001-8447-5430",
-      "roleName": "Developer"
-    },
-    {
-      "type": "Role",
-      "schema:author": "https://orcid.org/0000-0001-8447-5430",
-      "roleName": "Management"
+      "roleName": "Supervision"
     },
     {
       "id": "https://orcid.org/0000-0002-3748-6150",
@@ -90,7 +85,7 @@
     {
       "type": "Role",
       "schema:author": "https://orcid.org/0000-0002-3748-6150",
-      "roleName": "Management"
+      "roleName": "Supervision"
     },
     {
       "id": "https://orcid.org/0000-0001-9539-7730",
@@ -106,7 +101,7 @@
     {
       "type": "Role",
       "schema:author": "https://orcid.org/0000-0001-9539-7730",
-      "roleName": "Management"
+      "roleName": "Supervision"
     },
     {
       "id": "https://orcid.org/0000-0001-8700-7026",
@@ -122,7 +117,7 @@
     {
       "type": "Role",
       "schema:author": "https://orcid.org/0000-0001-8700-7026",
-      "roleName": "Management"
+      "roleName": "Supervision"
     },
     {
       "id": "_:author_bard",
@@ -138,7 +133,7 @@
     {
       "type": "Role",
       "schema:author": "_:author_bard",
-      "roleName": "Management"
+      "roleName": "Supervision"
     }
   ],
   "funder": {

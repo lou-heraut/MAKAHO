@@ -32,10 +32,13 @@ card-api et ses tests hors ligne et live, la liste du RRSE.
 
 ## Décisions prises en route
 
-- **Les crédits de la 2.0.0 reprennent ceux de la 1.0.0 à l'identique**
-  (`codemeta.json` et `AUTHORS` du tag `v1.0.0`) : les mêmes personnes,
-  les mêmes rôles, les mêmes ORCID. Retirer quelqu'un d'une citation ne
-  se décide pas seul ; à confirmer (question 1).
+- **Les crédits de la 2.0.0** (réponse de l'utilisateur à la question 1,
+  2026-11-11) : les sept personnes de la 1.0.0 restent, avec des rôles
+  précisés. Louis Héraut, auteur et mainteneur ; Michel Lang, référent
+  scientifique ; Benjamin Renard, Jean-Philippe Vidal, Éric Sauquet,
+  Ignazio Giuntoli et Antoine Bard, en encadrement. Benjamin Renard n'a
+  pas développé MAKAHO (il est l'auteur de la partie statistique de
+  stase) : la 1.0.0 le notait à tort « développeur ». Le financeur reste.
 
 - **La revue du 2026-11-11** (un sous-agent, en lecture seule, sur tout
   M1) n'a rien trouvé de grave et a relevé huit points, tous vérifiés
@@ -59,11 +62,5 @@ card-api et ses tests hors ligne et live, la liste du RRSE.
 
 ## Questions pour l'utilisateur
 
-1. **Les crédits.** La 1.0.0 nomme sept personnes dans son
-   `codemeta.json` : Louis Héraut (développement, maintenance), Michel
-   Lang (gestion de projet), Benjamin Renard (développement, gestion),
-   Jean-Philippe Vidal, Éric Sauquet, Ignazio Giuntoli et Antoine Bard
-   (gestion). Son `AUTHORS` n'en nomme que cinq (pas Giuntoli ni Bard).
-   Repris tels quels pour la 2.0.0 ; faut-il les garder tous comme
-   auteurs du logiciel, et le financeur (« Ministry of Ecological
-   Transition France, INRAE ») vaut-il encore ?
+Aucune en attente. La question des crédits est réglée (décisions,
+plus haut).

@@ -33,8 +33,10 @@ Chaque entrée dit ce qui a changé et renvoie au document qui l'explique.
   `LICENSE` en AGPL-3.0-or-later (texte identique à celui de la 1.0.0)
   et un en-tête dans chaque module. `.github/workflows/tests.yml` lance
   `make test` et `make lint` sur GitHub, sans rien déployer.
-  `CITATION.cff`, `codemeta.json` et `AUTHORS` reprennent les crédits de
-  la 1.0.0 ; `CODE_OF_CONDUCT.md` aussi. Le numéro de version a un seul
+  `CITATION.cff`, `codemeta.json` et `AUTHORS` reprennent les sept
+  personnes de la 1.0.0, rôles précisés par l'utilisateur (référent
+  scientifique, encadrement) ; `CODE_OF_CONDUCT.md` vient aussi de la
+  1.0.0. Le numéro de version a un seul
   endroit (« Numérotation », plus haut), tenu par
   `tests/test_citation.py`.
 - **Le squelette de l'application et le client de card-api

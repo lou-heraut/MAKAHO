@@ -174,7 +174,12 @@ Détaillées avec leur raison dans `dev/decisions.md`. En bref :
   importée de card-api, où elle a été payée deux fois.
 - **Une session par dépôt.** Ce qui manque à card-api, card ou stase se
   fait depuis une session ouverte dans ce dépôt, qui charge son
-  `CLAUDE.md` et ses règles ; jamais d'ici par chemin relatif.
+  `CLAUDE.md` et ses règles ; jamais d'ici par chemin relatif. Ce
+  qu'on relève pour lui s'écrit dans un message daté, déposé à sa
+  racine (`message-makaho_AAAA-MM-JJ.md`) : un en-tête qui résume, des
+  faits sourcés (fichier, ligne, mesure), des pistes sans trancher à
+  sa place. L'utilisateur le lui transmet ; ici, `ROADMAP.md` y renvoie
+  en une ligne.
 - **Un chantier à la fois**, et à chaque fois : ouvrir les docs de dev
   du dépôt concerné, faire, ajouter l'entrée `## Non publié` de son
   CHANGELOG, retirer le chantier de son registre. Le travail doit se
