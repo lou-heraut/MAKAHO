@@ -29,6 +29,9 @@ dans les documents partent de la racine du dépôt.
 - `dev/decisions.md` : les décisions de la migration avec leur raison,
   les principes de conduite, **ce que card-api impose au client**, le
   hors-périmètre, et ce que l'audit a de faux.
+- `dev/references.md` : les outils et les travaux qui inspirent les
+  propositions (applications voisines, représentations, méthode), avec
+  ce qu'on en retient.
 - `dev/audits/2026-09-18_migration.md` : photographie datée, close, de
   MAKAHO R Shiny et de ce que l'écosystème couvrait. Le point de départ,
   jamais tenu à jour.
