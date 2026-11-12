@@ -11,16 +11,18 @@
 
 """Ce que la page affiche, à partir d'une tendance rendue par card_client.
 
-La page ne calcule rien : les pentes, leurs classes de couleur,
-l'histogramme, le résumé et la provenance sont préparés ici, où ils se
+La page ne calcule rien : les verdicts, les classes de couleur, les
+compteurs, les libellés et la provenance sont préparés ici, où ils se
 testent. Tous les nombres viennent de card-api (principe 1 de
 `dev/decisions.md`) ; MAKAHO ne fait que les classer et les compter.
 
-La symbologie est celle de MAKAHO, et de la carte de référence de
-card-api (`examples/carte_tendance_QA.R`) :
+La symbologie est celle de MAKAHO 1.0.0
+(`dev/audits/2026-11-11_v1-interface.md`) :
 
 - la forme dit le verdict : `up` ou `down` pour une tendance
   significative, `none` sinon ;
+- une chronique de moins de `MIN_YEARS` valeurs est signalée (`short`),
+  et ne compte ni en hausse ni en baisse ;
 - la couleur dit la classe de la pente, dans tous les cas : pente
   relative (% par an) si la fiche le déclare, absolue sinon ;
 - la palette est celle de la fiche, les classes sont centrées sur zéro,
@@ -39,6 +41,11 @@ import statistics
 # rendues par card-api (dev/plans/2026-11-11_m2-map.md).
 EXTREME_PROB = 0.01
 
+# Le garde-fou de MAKAHO 1.0.0 : en deçà de trente valeurs, la tendance
+# n'est pas lue. Sur QA et le RRSE, il désigne les trois stations que la
+# 1.0.0 entoure de jaune (relevé du 2026-11-11).
+MIN_YEARS = 30
+
 # Ce qui n'est pas de la provenance dans la réponse : les données, et ce
 # que `for_page` reprend sous une autre forme. Tout le reste en est, y
 # compris un champ que card-api ajouterait demain.
@@ -46,7 +53,8 @@ _NOT_PROVENANCE = {"data", "meta", "series", "stations", "stations_meta",
                    "stations_requested", "stations_omitted", "orient",
                    "cards"}
 
-_SUPERSCRIPT = str.maketrans("0123456789-+", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺")
+_MONTHS = ("janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.",
+           "août", "sept.", "oct.", "nov.", "déc.")
 
 
 def for_page(result):
@@ -66,30 +74,31 @@ def for_page(result):
 
     slopes = [r[key] for r in rows if r.get(key) is not None]
     edges = class_edges(slopes, len(palette))
-    histogram = [0] * len(palette)
     stations = []
     for r in rows:
         slope = r.get(key)
-        klass = None if slope is None else class_of(slope, edges)
-        if klass is not None:
-            histogram[klass] += 1
-        stations.append({"code": r["code_station"], "trend": _trend(r),
-                         "slope": slope, "class": klass, "p": r.get("p"),
-                         "n": r.get("n")})
+        stations.append({
+            "code": r["code_station"],
+            "trend": _trend(r),
+            "short": r.get("n") is not None and r["n"] < MIN_YEARS,
+            "class": None if slope is None else class_of(slope, edges),
+            "a": r.get("a"),
+            "a_relative": r.get("a_relative") if relative else None,
+        })
 
     out = {
         "variable": {
             "id": variable,
             "name": meta.get("name_fr"),
-            "unit": _slope_unit(meta, relative),
-            "digits": _digits(edges),
             "relative": relative,
+            "units": _units(meta, relative),
+            "sampling": sampling_label(meta.get("sampling_period_fr")),
+            "digits": _digits(edges),
             "palette": palette,
             "edges": edges,
-            "histogram": histogram,
         },
         "stations": stations,
-        "summary": summary(stations, slopes),
+        "summary": summary(stations),
         "omitted": result.get("stations_omitted", []),
         "provenance": {k: v for k, v in result.items()
                        if k not in _NOT_PROVENANCE},
@@ -128,15 +137,58 @@ def class_of(slope, edges):
     return bisect.bisect_left(edges, slope)
 
 
-def summary(stations, slopes):
-    """Le résumé court de M2 : combien de hausses, de baisses, de stations
-    sans tendance significative, et la pente médiane."""
-    count = {"up": 0, "down": 0, "none": 0}
+def summary(stations):
+    """Les compteurs de la 1.0.0 : les stations, les hausses et les
+    baisses significatives. Une chronique trop courte n'en est pas une."""
+    count = {"up": 0, "down": 0}
     for s in stations:
-        if s["trend"] in count:
+        if s["trend"] in count and not s["short"]:
             count[s["trend"]] += 1
-    return {**count, "total": len(stations),
-            "median": statistics.median(slopes) if slopes else None}
+    return {**count, "total": len(stations)}
+
+
+def sampling_label(window):
+    """`01-09, 31-08` (jour-mois, `sampling_period_fr` de la fiche)
+    devient `du 01 sept. au 31 août`. None si la fenêtre n'a pas cette
+    forme : la page n'en dit rien plutôt que de deviner."""
+    m = re.fullmatch(r"\s*(\d{2})-(\d{2})\s*,\s*(\d{2})-(\d{2})\s*",
+                     window or "")
+    if not m:
+        return None
+    d1, m1, d2, m2 = m.groups()
+    if not (1 <= int(m1) <= 12 and 1 <= int(m2) <= 12):
+        return None
+    return f"du {d1} {_MONTHS[int(m1) - 1]} au {d2} {_MONTHS[int(m2) - 1]}"
+
+
+def unit_parts(unit):
+    """Une unité en morceaux (texte, exposant) que la page écrit avec
+    `<sup>` : `m^{3}.s^{-1}` donne `[["m", "3"], [".s", "-1"]]`."""
+    parts, pos = [], 0
+    for m in re.finditer(r"\^\{([^}]*)\}", unit or ""):
+        parts.append([unit[pos:m.start()], m.group(1)])
+        pos = m.end()
+    if pos < len(unit or ""):
+        parts.append([unit[pos:], ""])
+    return parts
+
+
+def _units(meta, relative):
+    """Les unités des pentes : absolue et relative pour l'infobulle, et
+    celle de la barre de couleur, en toutes lettres comme dans la 1.0.0.
+    Une date (jour de l'année) dérive en jours par an."""
+    if meta.get("is_date"):
+        absolute = "jour.an^{-1}"
+        bar = [["jours par an", ""]]
+    else:
+        unit = meta.get("unit_fr") or ""
+        absolute = f"{unit}.an^{{-1}}" if unit else "an^{-1}"
+        bar = unit_parts(unit) + [[" par an", ""]]
+    if relative:
+        bar = [["% par an", ""]]
+    return {"absolute": unit_parts(absolute),
+            "relative": unit_parts("%.an^{-1}") if relative else None,
+            "bar": bar}
 
 
 def _trend(row):
@@ -149,27 +201,9 @@ def _trend(row):
     return "up" if a > 0 else "down"
 
 
-def _slope_unit(meta, relative):
-    """L'unité de la pente affichée. Une date (jour de l'année) dérive en
-    jours par an, quelle que soit l'unité de la variable."""
-    if relative:
-        return "% / an"
-    if meta.get("is_date"):
-        return "jours / an"
-    return f"{_unit(meta.get('unit_fr'))} / an".strip()
-
-
 def _digits(edges):
     """Les décimales qui distinguent deux bornes voisines, avec deux
     chiffres significatifs : 2 pour des pentes de l'ordre du pour cent,
     davantage pour une fréquence qui varie de 1e-4 par an."""
     step = edges[1] - edges[0] if len(edges) > 1 else abs(edges[0]) or 1.0
     return max(0, math.ceil(-math.log10(step)) + 1)
-
-
-def _unit(unit):
-    """`m^{3}.s^{-1}` devient `m³.s⁻¹`."""
-    if not unit:
-        return ""
-    return re.sub(r"\^\{([^}]*)\}",
-                  lambda m: m.group(1).translate(_SUPERSCRIPT), unit)

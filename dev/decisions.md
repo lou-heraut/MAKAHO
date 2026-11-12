@@ -98,6 +98,17 @@ Arrêtées entre le 2026-09-18 et le 2026-11-11.
     (audit, 4.8), qui demande un jeton ; le Plan IGN en couleur et
     OpenStreetMap standard, trop chargés pour ne pas concurrencer les
     marqueurs.
+11. **La typographie de la 2.0.0 n'est pas celle de la 1.0.0**
+    (2026-11-11 et 12, voulu par l'utilisateur). Raleway pour les
+    titres, Inter pour le texte, Roboto Mono pour les chiffres et les
+    codes, en police d'accent, pour le côté science des données. Inter
+    plutôt que Lato : c'est la plus proche de l'Helvetica de la 1.0.0,
+    et elle reste lisible aux petites tailles de l'infobulle. Les trois
+    sont servies par MAKAHO (`src/makaho/static/vendor/README.md`).
+    **Le séparateur décimal est le point, partout**, même en français :
+    c'est l'usage en science des données. C'est l'exception à la
+    convergence vers la 1.0.0 (décision 9) : ne pas revenir à Helvetica
+    ni à la virgule.
 
 ## Les principes de conduite (2026-09-18)
 

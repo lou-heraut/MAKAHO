@@ -53,11 +53,12 @@ dans les documents partent de la racine du dépôt.
                     clé ne quitte pas le serveur.
     stations.py     les listes de station_lists/, seule donnée locale :
                     un code par ligne, la source en lignes # en tête.
-    trends.py       ce que la page affiche (classes, histogramme, résumé,
+    trends.py       ce que la page affiche (classes, compteurs, libellés,
                     provenance), calculé ici ; le JavaScript ne calcule rien.
-    static/         css/, js/, vendor/ (Leaflet copié, sans CDN : voir son
-                    README). templates/index.html porte le sprite des
-                    marqueurs.
+    static/         css/, js/, vendor/ (Leaflet et les polices copiés,
+                    sans CDN : voir son README). templates/index.html
+                    porte le sprite des marqueurs, templates/icons/ le
+                    logo et les icônes, avec leur source.
     __init__.py     create_app. L'environnement est décrit dans
                     .env.example, et seulement là.
   tests/            hors ligne, sur le card-api simulé de conftest.py ;
@@ -127,13 +128,16 @@ Détaillées avec leur raison dans `dev/decisions.md`. En bref :
 8. **MAKAHO quitte SK8 pour une VM**, peut-être celle de card-api.
 9. **La réécriture part de zéro**, mais **son interface converge vers
    celle de la 1.0.0 en ligne** (2026-11-11), earth.nullschool.net en
-   inspiration derrière : la regarder avant d'écrire une page. Son CSS,
+   inspiration derrière : la regarder avant d'écrire une page (relevé
+   daté : `dev/audits/2026-11-11_v1-interface.md`). Son CSS,
    propre à Shiny, est une référence, pas une vérité. Les pistes
    techniques de `ROADMAP.md` sont des propositions.
 10. **Leaflet et un vrai fond de carte**, pas une carte dessinée en
     SVG : MAKAHO montre des observations de terrain, qu'il faut pouvoir
     situer. Le fond : Plan IGN en gris et relief, de la Géoplateforme,
     sans jeton.
+11. **Raleway, Inter et Roboto Mono, et le point décimal partout** :
+    l'exception à la convergence vers la 1.0.0.
 
 ## Ce qui ne se déduit pas du code
 

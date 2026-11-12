@@ -135,3 +135,22 @@ def test_la_page_sert_leaflet_et_son_script_depuis_makaho(app):
         assert path in html
         assert client.get(path).status_code == 200
     assert "cdn" not in html.lower() and "unpkg" not in html.lower()
+
+
+def test_les_polices_et_les_icones_viennent_de_makaho(app):
+    """Les trois polices (décision 11) sont servies par MAKAHO, avec leur
+    licence, et les icônes sont dans la page : rien à aller chercher
+    ailleurs pour la dessiner."""
+    import re
+
+    client = app.test_client()
+    css = client.get("/static/css/makaho.css").get_data(as_text=True)
+    fonts = re.findall(r'url\("\.\./(vendor/[^"]+\.woff2)"\)', css)
+    assert len(fonts) == 3
+    for font in fonts:
+        assert client.get(f"/static/{font}").status_code == 200
+        folder = font.rsplit("/", 1)[0]
+        assert client.get(f"/static/{folder}/LICENSE").status_code == 200
+    html = client.get("/").get_data(as_text=True)
+    assert 'class="logo"' in html             # le logo INRAE
+    assert 'class="icon"' in html             # le bouton de recentrage

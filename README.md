@@ -23,8 +23,9 @@ MAKAHO ne calcule rien lui-même. Tout vient du service
 journaliers de [Hub'Eau](https://hubeau.eaufrance.fr/) (Licence
 Ouverte), les agrège selon les fiches
 [card](https://github.com/lou-heraut/card) et teste leur tendance avec
-[stase](https://github.com/lou-heraut/stase). Chaque carte affiche les
-versions et la date des données qui l'ont produite.
+[stase](https://github.com/lou-heraut/stase). Le panneau
+d'information, qui s'ouvre sur le logo INRAE, donne la date des données
+et les versions qui ont produit la carte.
 
 Le fond de carte est celui de la Géoplateforme de l'IGN.
 

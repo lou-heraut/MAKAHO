@@ -30,7 +30,7 @@ measure = ["numpy", "pandas", "python-dotenv", "stase"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-makaho = ["templates/*.html", "station_lists/*.txt", "static/**/*"]
+makaho = ["templates/**/*", "station_lists/*.txt", "static/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

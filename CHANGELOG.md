@@ -18,18 +18,24 @@ Chaque entrée dit ce qui a changé et renvoie au document qui l'explique.
 
 ### Ajouté
 
-- **Une première carte (M2, 2026-11-11), non validée** : son interface
-  est à reprendre pour converger vers celle de la 1.0.0 (`ROADMAP.md`,
-  M2). La tendance de QA sur les 228 stations
-  du RRSE, lue depuis card-api : le fond choisi (décision 10), un
-  marqueur par station dont la forme dit le verdict et la couleur la
-  classe de pente, une infobulle, la barre de couleur avec son
-  histogramme, le résumé (hausses, baisses, pente médiane) et la
-  provenance. `src/makaho/trends.py` prépare tout, le JavaScript ne fait
-  que dessiner ; les bornes des classes sont celles de stase, vérifiées
-  sur une vraie réponse. Leaflet est servi par MAKAHO, sans CDN.
-  Détail et revue : `dev/plans/2026-11-11_m2-map.md`. Le `README.md`
-  décrit maintenant ce qui existe.
+- **La carte des tendances (M2, reprise les 2026-11-11 et 12)**, sur
+  l'interface de la 1.0.0 en ligne
+  (`dev/audits/2026-11-11_v1-interface.md`) : la carte plein écran au
+  cadrage de la 1.0.0, sans boutons de zoom, et un bouton pour
+  recentrer ; les symboles de la 1.0.0 (triangle pour une tendance
+  significative, rond sinon, rond cerclé de jaune pour une chronique de
+  moins de trente ans), aux contours un peu plus foncés pour le fond
+  IGN ; l'infobulle de station (code, nom, pentes absolue et relative,
+  position) ; à droite, le résumé de la fiche avec son année
+  hydrologique, la barre de couleur verticale et les compteurs ; sous le
+  logo INRAE, le panneau d'information, qui porte la provenance. Polices
+  Raleway, Inter et Roboto Mono, servies par MAKAHO, et le point
+  décimal partout (décision 11). Les données viennent de card-api pour
+  QA sur les 228 stations du RRSE ; `src/makaho/trends.py` prépare tout,
+  le JavaScript ne fait que dessiner. Une première page, construite le
+  2026-11-11 d'après une figure de card-api, a été refusée et remplacée
+  (son histogramme et sa pente médiane seront reproposés). Détail :
+  `dev/plans/2026-11-11_m2-map.md`.
 - **La mesure de l'audit passe par card-api, et confirme la décision 4
   (2026-11-11).** `scripts/mesure_sampling.py` (`make measure`) prend
   ses tendances à `/v1/trend` et ses chroniques à `/v1/chronicles`, au
@@ -81,6 +87,14 @@ Chaque entrée dit ce qui a changé et renvoie au document qui l'explique.
 
 ### Documentation
 
+- **L'interface de la 1.0.0, relevée en ligne (2026-11-11)**, pour que
+  la reprise de M2 converge vers elle :
+  `dev/audits/2026-11-11_v1-interface.md`. La disposition, les jetons
+  de couleur et de forme, les marqueurs mesurés, l'infobulle, les
+  panneaux et leurs boutons, l'affichage sur téléphone, et ce que la
+  2.0.0 ne reprend pas tel quel. Captures et texte de l'aide guidée
+  dans le dossier du même nom. Seul `www/ui.css` du tag `v1.0.0` a été
+  lu, comme référence d'allure.
 - **Le fond de carte et MEANDRE (2026-11-11).** Décision 10 de
   `dev/decisions.md` : Leaflet et un vrai fond de carte, parce que
   MAKAHO montre des observations de terrain qu'il faut pouvoir situer ;

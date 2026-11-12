@@ -1,8 +1,10 @@
 /* MAKAHO : la carte des tendances.
  *
  * Ce fichier ne calcule rien. Il dessine ce que le serveur prépare
- * (src/makaho/trends.py) : verdicts, classes de couleur, histogramme,
- * résumé, provenance. Les nombres viennent tous de card-api.
+ * (src/makaho/trends.py) : verdicts, classes de couleur, compteurs,
+ * libellés, provenance. Les nombres viennent tous de card-api ; ici, on
+ * ne fait que les écrire. La disposition est celle de MAKAHO 1.0.0
+ * (dev/audits/2026-11-11_v1-interface.md).
  *
  * Copyright 2026 Louis Héraut, INRAE, UR RiverLy. Licence
  * AGPL-3.0-or-later, voir le fichier LICENSE du dépôt.
@@ -10,18 +12,29 @@
 "use strict";
 
 (function () {
-  // ── Le fond de carte (décision 10) ────────────────────────────────
-  // Le Plan IGN en gris clair, multiplié par l'estompage du relief ; les
-  // rivières à partir d'un zoom régional. Géoplateforme de l'IGN, sans
-  // jeton. Les réglages ont été choisis à l'écran le 2026-11-11.
+  // ── La carte ──────────────────────────────────────────────────────
+  // La vue de départ de la 1.0.0 (centre 46.80 N, 2.51 E, zoom 6 sur un
+  // écran large), sans boutons de zoom : la molette, le pincement, et le
+  // bouton de recentrage quand la carte a bougé. Le zoom est le plus fort
+  // qui montre la France entière : 6 sur un écran large, 5 sur un
+  // téléphone, comme la 1.0.0.
+  const HOME_CENTER = [46.795, 2.509];
+  const FRANCE = [[41.3, -5.2], [51.1, 9.6]];
+
+  // Le fond (décision 10) : le Plan IGN en gris clair, multiplié par
+  // l'estompage du relief ; les rivières à partir d'un zoom régional.
+  // Géoplateforme de l'IGN, sans jeton. Réglages choisis à l'écran le
+  // 2026-11-11.
   const WMTS = "https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile"
     + "&VERSION=1.0.0&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}"
     + "&TILECOL={x}&FORMAT=image/png";
   const wmts = (layer, style) => `${WMTS}&LAYER=${layer}&STYLE=${style || "normal"}`;
   const IGN = '<a href="https://cartes.gouv.fr/">IGN, Géoplateforme</a>';
 
-  const map = L.map("map", { zoomSnap: 0.5, minZoom: 5, maxZoom: 14 })
-    .setView([46.6, 2.5], 6);
+  const map = L.map("map", { zoomControl: false, minZoom: 5, maxZoom: 14 });
+  const homeZoom = () => Math.min(6, map.getBoundsZoom(FRANCE));
+  const goHome = () => map.setView(HOME_CENTER, homeZoom());
+  goHome();
   map.attributionControl.setPrefix('<a href="https://leafletjs.com/">Leaflet</a>');
   L.tileLayer(wmts("GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2"), {
     className: "basemap-grey", opacity: 0.4, maxZoom: 18,
@@ -34,23 +47,40 @@
     opacity: 0.45, minZoom: 8, maxZoom: 18,
   }).addTo(map);
 
-  // ── Petits outils ─────────────────────────────────────────────────
+  // ── Petits outils d'écriture ──────────────────────────────────────
   const $ = (id) => document.getElementById(id);
   const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
-
-  /** Un nombre à la française, `digits` décimales. */
-  function num(x, digits = 2) {
-    if (x === null || x === undefined) return "non calculée";
-    return x.toLocaleString("fr-FR", {
-      minimumFractionDigits: digits, maximumFractionDigits: digits,
-    });
-  }
 
   /** Les noms viennent de Hub'Eau : jamais insérés tels quels. */
   function escape(text) {
     return String(text ?? "").replace(/[&<>"']/g, (c) => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
     })[c]);
+  }
+
+  /** Le vrai signe moins, que les chiffres de Roboto Mono dessinent. */
+  const minus = (text) => String(text).replace(/^-/, "−");
+
+  /** Un nombre, `digits` décimales, avec un point décimal partout,
+   * comme en science des données (dev/decisions.md, décision 11). */
+  function num(x, digits = 2) {
+    return minus(x.toFixed(digits));
+  }
+
+  /** Un nombre en notation scientifique, trois chiffres significatifs :
+   * `−4.37 × 10<sup>−2</sup>`, comme dans la 1.0.0. Les chiffres en
+   * chasse fixe, le « × 10 » dans la police du texte. */
+  function sci(x) {
+    const [mantissa, exponent] = x.toExponential(2).split("e");
+    const m = `<span class="num">${num(Number(mantissa), 2)}</span>`;
+    return Number(exponent) === 0 ? m
+      : `${m} × 10<sup class="num">${escape(minus(Number(exponent)))}</sup>`;
+  }
+
+  /** Une unité préparée par trends.py, en morceaux (texte, exposant). */
+  function unit(parts) {
+    return (parts || []).map(([text, exp]) =>
+      escape(text) + (exp ? `<sup>${escape(minus(exp))}</sup>` : "")).join("");
   }
 
   /** Une couleur de palette, ou du gris si ce n'en est pas une. */
@@ -60,7 +90,7 @@
 
   function status(text, isError = false) {
     const el = $("status");
-    el.textContent = text;
+    $("status-text").textContent = text;
     el.classList.toggle("error", isError);
     el.hidden = !text;
   }
@@ -94,128 +124,173 @@
     job: "Le calcul demandé a échoué ou a expiré. Rechargez la page pour le relancer.",
   };
 
-  // ── Le dessin ─────────────────────────────────────────────────────
+  // ── Les stations ──────────────────────────────────────────────────
 
-  const VERDICT = {
-    up: "Hausse significative",
-    down: "Baisse significative",
-    none: "Pas de tendance significative",
-  };
+  /** La forme dit le verdict ; une chronique trop courte est un rond
+   * cerclé de jaune, une station sans tendance un rond vide. */
+  function look(s) {
+    if (s.trend == null) return { css: "missing", symbol: "none" };
+    if (s.short) return { css: "short", symbol: "short" };
+    return { css: s.trend, symbol: s.trend };
+  }
 
-  function tooltip(station, position, variable) {
-    const verdict = VERDICT[station.trend];
-    const lines = [
-      `<strong>${escape(position.name || station.code)}</strong>`,
-      `<span class="code">${escape(station.code)}</span>`,
-    ];
-    if (verdict) {
-      lines.push(`${verdict}, ${num(station.slope, variable.digits)} ${escape(variable.unit)}`);
-      lines.push(`p = ${num(station.p, 3)}, sur ${station.n} années`);
-    } else {
-      lines.push("Tendance non calculée");
+  /** L'infobulle de la 1.0.0 : le code et le nom, les pentes dans la
+   * couleur de la station, la position. */
+  function tooltip(s, pos, v, fill) {
+    const slopes = [];
+    if (s.a != null) {
+      slopes.push(`<b>${sci(s.a)}</b> <span class="unit">[${unit(v.units.absolute)}]</span>`);
     }
-    return lines.join("<br>");
+    if (s.a_relative != null) {
+      slopes.push(`<b class="num">${num(s.a_relative, 2)}</b> <span class="unit">[${unit(v.units.relative)}]</span>`);
+    }
+    return `<div class="head"><span class="code">${escape(s.code)}</span> - ${escape(pos.name || "")}</div>`
+      + (slopes.length ? `<div class="slopes" style="color:${fill}">${slopes.join(" ")}</div>` : "")
+      + "<table><tr>"
+      + `<td>Lat : <span class="num">${num(pos.lat, 4)}</span></td>`
+      + `<td>Long : <span class="num">${num(pos.lon, 4)}</span></td>`
+      + "</tr></table>";
   }
 
   function drawStations(page) {
-    const variable = page.variable;
+    const v = page.variable;
     const where = new Map((page.positions || []).map((p) => [p.code, p]));
-    const points = [];
     for (const s of page.stations) {
       const pos = where.get(s.code);
       if (!pos || pos.lat == null || pos.lon == null) continue;
-      const significant = s.trend === "up" || s.trend === "down";
-      const size = significant ? 16 : 12;
-      const fill = s.class == null ? "#ffffff" : color(variable.palette[s.class]);
+      const { css, symbol } = look(s);
+      const fill = s.class == null ? "#ffffff" : color(v.palette[s.class]);
       const icon = L.divIcon({
-        className: `station ${s.trend || "gap"}`,
-        html: `<svg class="marker" style="--fill:${fill}"><use href="#m-${s.trend || "none"}"/></svg>`,
-        iconSize: [size, size],
+        className: `station ${css}`,
+        html: `<svg class="marker" viewBox="0 0 24 24" style="--fill:${fill}"><use href="#m-${symbol}"/></svg>`,
+        iconSize: [32, 32],
       });
-      L.marker([pos.lat, pos.lon], { icon, keyboard: false, riseOnHover: true })
-        .bindTooltip(tooltip(s, pos, variable), {
-          direction: "top", offset: [0, -size / 2],
+      const significant = !s.short && (s.trend === "up" || s.trend === "down");
+      L.marker([pos.lat, pos.lon], {
+        icon, keyboard: false, zIndexOffset: significant ? 1000 : 0,
+      })
+        .bindTooltip(tooltip(s, pos, v, fill), {
+          className: "station-tip", direction: "auto", offset: [8, 0],
         })
         .addTo(map);
-      points.push([pos.lat, pos.lon]);
     }
-    return points;
   }
 
-  /** Cadrer les stations. Un panneau qui couvre presque toute la largeur
-   * (sur un téléphone) cacherait des stations : on cadre au-dessous du
-   * titre et au-dessus de la légende. */
-  function fit(points) {
-    if (!points.length) return;
-    const width = map.getSize().x;
-    const covers = (el) => !el.hidden && el.offsetWidth > 0.6 * width;
-    const title = $("title").closest(".panel"), legend = $("legend");
-    const top = covers(title) ? title.offsetTop + title.offsetHeight + 10 : 30;
-    const bottom = covers(legend) ? legend.offsetHeight + 40 : 30;
-    map.fitBounds(points, { paddingTopLeft: [30, top], paddingBottomRight: [30, bottom] });
+  // ── Les panneaux de droite ────────────────────────────────────────
+
+  function drawSummary(page) {
+    const v = page.variable, prov = page.provenance;
+    $("card-id").textContent = v.id;
+    $("card-name").textContent = v.name || "";
+    $("card-sampling").innerHTML = v.sampling
+      ? `Année hydrologique<br>${escape(v.sampling)}` : "";
+    // La période demandée, comme le curseur de la 1.0.0. Sans fin
+    // demandée, l'analyse va jusqu'aux dernières données (M3 donnera la
+    // borne de fin, avec son curseur).
+    const period = prov.period || {};
+    const year = (date) => escape(String(date).slice(0, 4));
+    $("card-period").innerHTML = period.start && period.end
+      ? `Période <span class="num">${year(period.start)}</span> - <span class="num">${year(period.end)}</span>`
+      : period.start ? `Période depuis <span class="num">${year(period.start)}</span>` : "";
+    $("card-level").innerHTML = prov.level != null
+      ? `Significativité de <span class="num">${num(prov.level * 100, 0)}%</span>` : "";
+    $("summary").hidden = false;
   }
 
-  /** La barre de couleur, avec au-dessus l'histogramme des pentes : la
-   * classe et sa population au même endroit. Les classes extrêmes sont
-   * ouvertes, d'où leurs bouts en pointe. */
-  function colorbar(variable) {
-    const k = variable.palette.length;
-    const W = 260, barH = 34, colH = 12, w = W / k, y = barH + 3;
-    const max = Math.max(1, ...variable.histogram);
+  /** La barre de couleur de la 1.0.0 : verticale, les classes positives
+   * en haut, les deux classes ouvertes en pointe, les bornes à droite et
+   * le titre à gauche, de bas en haut. */
+  function drawColorbar(v) {
+    const k = v.palette.length, inner = k - 2;
+    const W = 84, H = 262, x = 24, w = 15, arrow = 14;
+    const top = 2, bottom = H - 2;
+    const box = (bottom - top - 2 * arrow) / inner;
     const parts = [];
-    variable.histogram.forEach((n, i) => {
-      const h = (barH * n) / max;
-      parts.push(`<rect class="bar" x="${i * w + 2}" y="${barH - h}" width="${w - 4}" height="${h}"><title>${n} station${n > 1 ? "s" : ""}</title></rect>`);
-    });
-    variable.palette.forEach((c, i) => {
-      const x = i * w, fill = color(c);
+    v.palette.forEach((c, i) => {
+      const fill = color(c);
       if (i === 0) {
-        parts.push(`<polygon class="class" fill="${fill}" points="${x},${y + colH / 2} ${x + w},${y} ${x + w},${y + colH}"/>`);
+        const y = bottom - arrow;
+        parts.push(`<polygon fill="${fill}" points="${x},${y} ${x + w},${y} ${x + w / 2},${bottom}"/>`);
       } else if (i === k - 1) {
-        parts.push(`<polygon class="class" fill="${fill}" points="${x},${y} ${x + w},${y + colH / 2} ${x},${y + colH}"/>`);
+        const y = top + arrow;
+        parts.push(`<polygon fill="${fill}" points="${x},${y} ${x + w},${y} ${x + w / 2},${top}"/>`);
       } else {
-        parts.push(`<rect class="class" fill="${fill}" x="${x}" y="${y}" width="${w}" height="${colH}"/>`);
+        const y = bottom - arrow - i * box;
+        parts.push(`<rect fill="${fill}" x="${x}" y="${y}" width="${w}" height="${box + 0.3}"/>`);
       }
     });
-    variable.edges.forEach((edge, j) => {
-      if (j % 2) return;                      // une borne sur deux, lisible
-      const label = Math.abs(edge) < 1e-12 ? "0" : num(edge, variable.digits);
-      parts.push(`<text class="tick" x="${(j + 1) * w}" y="${y + colH + 13}">${label}</text>`);
+    v.edges.forEach((edge, j) => {
+      const y = bottom - arrow - j * box;
+      const label = Math.abs(edge) < 1e-12 ? "0" : num(edge, v.digits);
+      parts.push(`<text class="tick" x="${x + w + 5}" y="${y}" dominant-baseline="middle">${escape(label)}</text>`);
     });
-    return `<svg viewBox="0 0 ${W} ${y + colH + 17}" role="img" aria-label="Classes de pente et nombre de stations par classe">${parts.join("")}</svg>`;
+    const unitText = (v.units.bar || []).map(([text, exp]) =>
+      escape(text) + (exp ? `<tspan baseline-shift="super" font-size="8">${escape(minus(exp))}</tspan>` : "")).join("");
+    parts.push(`<text transform="translate(10 ${H / 2}) rotate(-90)" text-anchor="middle" dominant-baseline="middle">`
+      + `<tspan class="title">TENDANCES OBSERVÉES</tspan><tspan class="unit"> ${unitText}</tspan></text>`);
+    $("colorbar").innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" `
+      + `aria-label="Classes de pente, ${escape(v.units.bar.map((p) => p[0]).join(""))}">${parts.join("")}</svg>`;
+    $("colorbar").hidden = false;
   }
 
-  function drawLegend(page) {
-    const v = page.variable, s = page.summary, prov = page.provenance;
-    const period = prov.period || {};
-    const since = period.start ? `depuis ${period.start.slice(0, 4)}` : "toute la chronique";
-    $("title").textContent = `${v.name} (${v.id})`;
-    $("subtitle").textContent = `RRSE, ${s.total} stations, ${since}, `
-      + `Mann-Kendall ${prov.mk}, risque ${num(prov.level * 100, 0)} %`;
-    $("unit").textContent = v.relative
-      ? "Pente de Sen relative, en % par an"
-      : `Pente de Sen, en ${v.unit}`;
-    $("colorbar").innerHTML = colorbar(v);
-    let summary = `${s.down} en baisse, ${s.up} en hausse, ${s.none} sans `
-      + `tendance significative. Pente médiane : ${num(s.median, v.digits)} ${v.unit}.`;
+  function drawCounts(page) {
+    const s = page.summary;
+    const lines = [
+      `<span class="num">${s.total}</span> stations au total`,
+      `∆ <span class="num">${s.up}</span> hausse${s.up > 1 ? "s" : ""} significative${s.up > 1 ? "s" : ""}`,
+      `∇ <span class="num">${s.down}</span> baisse${s.down > 1 ? "s" : ""} significative${s.down > 1 ? "s" : ""}`,
+    ];
     if (page.omitted.length) {
-      summary += ` ${page.omitted.length} station(s) écartée(s), sans débits.`;
+      lines.push(`<span class="num">${page.omitted.length}</span> écartée${page.omitted.length > 1 ? "s" : ""}, sans débits`);
     }
-    $("summary").textContent = summary;
-    const read = prov.data_fetched_at
-      ? new Date(prov.data_fetched_at).toLocaleDateString("fr-FR") : "?";
-    $("provenance").innerHTML = `Débits <a href="https://hubeau.eaufrance.fr/">Hub'Eau</a> lus le ${escape(read)}, `
-      + `calcul <a href="https://card-api.riverly.inrae.fr/">card-api</a> ${escape(prov.api_version)} `
-      + `(card ${escape(prov.card_version)}, stase ${escape(prov.stase_version)})`;
-    $("legend").hidden = false;
+    $("counts").innerHTML = lines.map((l) => `<p>${l}</p>`).join("");
+    $("counts").hidden = false;
   }
+
+  /** La provenance, dans le panneau d'information : là où la 1.0.0
+   * disait la date de ses données. */
+  function drawInfo(prov) {
+    const read = prov.data_fetched_at
+      ? new Date(prov.data_fetched_at).toLocaleDateString("fr-FR") : null;
+    if (read) $("info-data").insertAdjacentHTML("beforeend", `, lus le <span class="num">${escape(read)}</span>`);
+    const versions = [];
+    if (prov.api_version) versions.push(`<span class="num">${escape(prov.api_version)}</span>`);
+    const deps = [["card", prov.card_version], ["stase", prov.stase_version]]
+      .filter(([, ver]) => ver)
+      .map(([name, ver]) => `${name} <span class="num">${escape(ver)}</span>`);
+    if (deps.length) versions.push(`(${deps.join(", ")})`);
+    if (versions.length) $("info-compute").insertAdjacentHTML("beforeend", ` ${versions.join(" ")}`);
+  }
+
+  // ── Les boutons ───────────────────────────────────────────────────
+
+  const recenter = $("recenter");
+  recenter.addEventListener("click", goHome);
+  map.on("moveend", () => {
+    const home = map.getZoom() === homeZoom()
+      && map.latLngToContainerPoint(HOME_CENTER).distanceTo(map.getSize().divideBy(2)) < 2;
+    recenter.hidden = home;
+  });
+
+  const infoButton = $("info-button"), info = $("info");
+  infoButton.addEventListener("click", () => {
+    info.hidden = !info.hidden;
+    infoButton.setAttribute("aria-expanded", String(!info.hidden));
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !info.hidden) infoButton.click();
+  });
+
+  // ── Le chargement ─────────────────────────────────────────────────
 
   load()
     .then((page) => {
-      const points = drawStations(page);
-      drawLegend(page);
+      drawStations(page);
+      drawSummary(page);
+      drawColorbar(page.variable);
+      drawCounts(page);
+      drawInfo(page.provenance);
       status("");
-      fit(points);
     })
     .catch((error) => {
       const known = error && MESSAGES[error.error];

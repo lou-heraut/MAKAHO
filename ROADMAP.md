@@ -53,14 +53,16 @@ d'affiché encore. Fait (`CHANGELOG.md`, et le détail dans
 `dev/plans/2026-11-11_m1-foundation.md`), sauf :
 
 - Reste à l'utilisateur : vérifier la fiche HAL de la version 1.0.0.
-- Sept points relevés dans le code de card-api le 2026-11-11, déposés
-  à sa racine (`message-makaho_2026-11-11.md`), à traiter depuis une
-  session ouverte là-bas : le référentiel des stations lu chez Hub'Eau
-  à chaque appel, les plafonds d'une clé illisibles dans
-  `/v1`, un renvoi périmé au `PLAN.md` d'ici, une licence en désaccord
-  dans son `codemeta.json`, deux exemples du README refusés en 422,
-  un exemple R qui lit des champs disparus, une fiche inconnue découverte
-  après la lecture des chroniques.
+- Huit points relevés pour card-api le 2026-11-11, déposés à sa racine
+  (`message-makaho_2026-11-11.md`), à traiter depuis une session
+  ouverte là-bas : le référentiel des stations lu chez Hub'Eau à chaque
+  appel, les plafonds d'une clé illisibles dans `/v1`, un renvoi périmé
+  au `PLAN.md` d'ici, une licence en désaccord dans son `codemeta.json`,
+  deux exemples du README refusés en 422, un exemple R qui lit des
+  champs disparus, une fiche inconnue découverte après la lecture des
+  chroniques, et (point 8, pour M2) la superficie du bassin et
+  l'altitude des stations, que Hub'Eau publie et que card-api ne lit
+  pas.
 - Le déploiement : un serveur WSGI, `compose.yaml`, le service sur un
   port local de la VM de card-api derrière son Apache (décision 8).
   L'adresse de card-api devient alors locale (`.env.example`).
@@ -74,28 +76,27 @@ Le client a tourné sur le contrat de card-api le 2026-11-11, avec la
 clé : c'est ce que card-api attendait pour passer en 1.0.0 (son
 `dev/decisions.md`). Ce qui gênait est dans le message déposé chez lui.
 
-## M2. La carte, à reprendre
+## M2. La carte, reprise
 
-Une première page existe (`CHANGELOG.md`) mais **n'est pas validée**
-(2026-11-11) : son interface s'éloigne trop de celle de la 1.0.0. Le
-pourquoi et ce qui se garde : `dev/plans/2026-11-11_m2-map.md`.
+La page reprise sur l'interface de la 1.0.0 en ligne
+(`dev/audits/2026-11-11_v1-interface.md`) est sur la bonne voie, dit
+l'utilisateur le 2026-11-12 (`CHANGELOG.md`). Reste la revue, puis la
+vérifier sur le service en ligne, ce qui demande la clé. Étapes,
+décisions et questions : `dev/plans/2026-11-11_m2-map.md`. La
+superficie et l'altitude de l'infobulle attendent card-api (point 8 du
+message déposé chez lui).
 
 Ce que l'utilisateur attend (2026-11-11) :
 
 - **La cible est MAKAHO 1.0.0 tel qu'il est en ligne** : sa disposition,
   ses panneaux, sa légende, ses marqueurs, ses interactions et tout ce
-  qu'il donne à lire, sur le fond déjà choisi (décision 10). Partir de
-  l'application en ligne, capture par capture, avant d'écrire.
+  qu'il donne à lire, sur le fond déjà choisi (décision 10).
 - **earth.nullschool.net reste l'inspiration derrière**, une autre porte
   de créativité : le CSS de la 1.0.0 avait été construit dans son
   esprit, et cet esprit se garde.
 - **Le CSS de la 1.0.0 n'est pas une vérité** : il était propre à Shiny.
-  Il sert de référence pour l'allure, pas de modèle à recopier. Lire les
-  fichiers d'interface R dans ce but paraît admis par cette réponse ; en
-  cas de doute, le confirmer au début de la reprise.
-- **La première page ne convient en rien**, sauf peut-être le fond :
-  l'allure, les interactions et l'information affichée sont très en
-  deçà de la 1.0.0, et la forme de la barre de couleur est contestable.
+  Il sert de référence pour l'allure, pas de modèle à recopier : seul
+  `www/ui.css` est lu, dans ce but (confirmé le 2026-11-11).
 - **Les améliorations viendront après**, proposées une à une, une fois
   la page proche de la 1.0.0 : pas avant.
 
