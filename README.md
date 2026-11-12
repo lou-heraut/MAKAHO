@@ -11,8 +11,9 @@ une variable hydrologique (le débit moyen annuel, l'étiage, la crue...)
 > en ligne sur [makaho.sk8.inrae.fr](https://makaho.sk8.inrae.fr/),
 > une application R Shiny figée au tag
 > [`v1.0.0`](https://github.com/lou-heraut/MAKAHO/tree/v1.0.0). La
-> réécriture affiche aujourd'hui la carte des tendances du débit moyen
-> annuel ; les menus, les graphiques par station et les exports
+> réécriture affiche aujourd'hui la carte des tendances et son panneau
+> d'analyse (régime, variable, année hydrologique, période, risque) ;
+> la sélection de stations, les graphiques par station et les exports
 > suivent. Où en est le travail : [`ROADMAP.md`](ROADMAP.md) ; ce qui a
 > été fait : [`CHANGELOG.md`](CHANGELOG.md).
 

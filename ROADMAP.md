@@ -66,7 +66,9 @@ d'affiché encore. Fait (`CHANGELOG.md`, et le détail dans
 - Le déploiement : un serveur WSGI, `compose.yaml`, le service sur un
   port local de la VM de card-api derrière son Apache (décision 8).
   L'adresse de card-api devient alors locale (`.env.example`).
-  **Reporté après M2** (2026-11-11) : rien à montrer avant la carte.
+  **Reporté après M2** (2026-11-11) : rien à montrer avant la carte ;
+  puis après le panneau d'analyse (2026-11-12) : l'interface passe
+  d'abord.
   **Préalable** : limiter ce qu'un visiteur fait calculer avec la clé
   de MAKAHO (un débit par adresse, par exemple). Chaque demande de la
   page part sans quota ni plafond de fiches, en tête de file de
