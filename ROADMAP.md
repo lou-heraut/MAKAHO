@@ -97,10 +97,11 @@ La cible, comme pour la carte, est le panneau Analyse de la 1.0.0 en
 ligne, réécrit et non recopié (décision 9). En cours : étapes, mesures
 et décisions dans `dev/plans/2026-11-12_m3-analysis.md`.
 
-Ce que card-api doit régler pour que la page soit fluide (mesures du
-2026-11-12, `message-makaho_2026-11-12.md` déposé à sa racine) : un
-plancher de 2.3 s par tendance même tout en cache, et la page qui tombe
-quand Hub'Eau traîne à rendre les positions des stations.
+Ce qui est demandé à card-api (`message-makaho_2026-11-12.md`, déposé à
+sa racine) : un plancher de 2.3 s par tendance même tout en cache, la
+page qui tombe quand Hub'Eau traîne à rendre les positions des
+stations, et les fiches d'un même indicateur à un paramètre près
+(« QpA » de la 1.0.0) que le catalogue ne relie pas.
 
 ## M4. Le graphique par station
 
@@ -211,6 +212,11 @@ la 2.0.0 en ligne.
 
 Posées, pas tranchées. Aucune ne bloque le démarrage.
 
+- **Des propositions scientifiques, pour plus tard** (2026-11-12, dit
+  par l'utilisateur) : une significativité d'ensemble du réseau, le
+  changement sur toute la période en clair, des bandes de débit par
+  station. Sources dans `dev/references.md`. Ce n'est pas l'objectif
+  tant que la 1.0.0 n'est pas reproduite et améliorée techniquement.
 - **L'actualisation de la liste RRSE.** Le réseau a évolué depuis
   l'article qui le présente (236 stations en 2013) ; MAKAHO garde les
   228 de sa version 1.0.0 (`src/makaho/station_lists/rrse.txt`).

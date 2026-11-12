@@ -27,6 +27,61 @@
     <span class="tip">Recentrer la carte sur la France</span>
   </button>
 
+  <!-- Le panneau d'analyse (M3) : ses menus viennent du catalogue de
+       card-api (/api/cards), rien n'y est écrit en dur. Un clic relance
+       le calcul ; un curseur attend « Actualiser »
+       (dev/plans/2026-11-12_m3-analysis.md). -->
+  <button id="analysis-button" class="button analysis-button tip-host" type="button" hidden
+          aria-expanded="false" aria-controls="analysis">
+    {% include "icons/trending_up.svg" %}<span>Analyse</span>
+    <span class="tip">Panneau des paramètres de l'analyse de tendance</span>
+  </button>
+  <button id="refresh" class="button pill" type="button" hidden>Actualiser l'analyse de tendance</button>
+
+  <section id="analysis" class="panel dark" hidden aria-label="Paramètres de l'analyse de tendance">
+    <p id="analysis-title" class="analysis-title"></p>
+    <div class="row">
+      <span class="label">Données</span>
+      <div class="choices"><span class="choice on">RRSE</span></div>
+    </div>
+    <div class="row">
+      <span class="label">Régime</span>
+      <div class="choices" id="regimes"></div>
+    </div>
+    <div class="row">
+      <span class="label">Variable</span>
+      <div class="choices stack">
+        <div class="line" id="seasons"></div>
+        <div class="line" id="cards"></div>
+        <div class="line sub" id="variables"></div>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">Année hydrologique</span>
+      <div class="choices stack">
+        <div class="slider"><input id="month" type="range" min="1" max="12" step="1"
+             aria-label="Mois où commence l'année hydrologique"></div>
+        <div class="ticks" id="month-ticks"></div>
+        <div class="line"><button id="optimal" class="choice" type="button"
+             title="Le départ que la fiche déclare">Optimale</button></div>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">Période</span>
+      <div class="choices stack">
+        <div class="slider double">
+          <input id="start" type="range" step="1" aria-label="Première année de la période">
+          <input id="end" type="range" step="1" aria-label="Dernière année de la période">
+        </div>
+        <div class="ticks" id="period-values"></div>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">Significativité</span>
+      <div class="choices" id="levels"></div>
+    </div>
+  </section>
+
   <div id="legend">
     <section id="summary" class="panel light docked" hidden aria-label="Ce que montre la carte">
       <h1 id="card-id"></h1>
@@ -62,9 +117,9 @@
       <dt>Interface</dt>
       <dd>inspirée de <a href="https://earth.nullschool.net/">earth.nullschool.net</a></dd>
       <dt>Débits</dt>
-      <dd id="info-data"><a href="https://hubeau.eaufrance.fr/">Hub'Eau</a></dd>
+      <dd><a href="https://hubeau.eaufrance.fr/">Hub'Eau</a><span id="info-data"></span></dd>
       <dt>Calcul</dt>
-      <dd id="info-compute"><a href="https://card-api.riverly.inrae.fr/">card-api</a></dd>
+      <dd><a href="https://card-api.riverly.inrae.fr/">card-api</a><span id="info-compute"></span></dd>
     </dl>
   </section>
 

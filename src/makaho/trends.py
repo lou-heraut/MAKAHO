@@ -31,6 +31,7 @@ La symbologie est celle de MAKAHO 1.0.0
 """
 
 import bisect
+import datetime
 import math
 import re
 import statistics
@@ -53,21 +54,48 @@ _NOT_PROVENANCE = {"data", "meta", "series", "stations", "stations_meta",
                    "stations_requested", "stations_omitted", "orient",
                    "cards"}
 
-_MONTHS = ("janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.",
+MONTHS = ("janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.",
            "août", "sept.", "oct.", "nov.", "déc.")
 
 
 def for_page(result):
     """La réponse de `/v1/trend` (ou d'un job de tendance), pour la page.
 
-    Une fiche à une seule variable par appel : c'est ce que demande la
-    vue complète (`dev/decisions.md`). Les familles de fiches viendront
-    avec les menus (M3).
+    Une fiche par appel : c'est ce que demande la vue complète
+    (`dev/decisions.md`). Une fiche à plusieurs variables (QMA, un mois
+    par variable) les rend ensemble, dans une table que la colonne
+    `variable` partage : la page reçoit une entrée par variable, dans
+    l'ordre de `meta`, et passe de l'une à l'autre sans redemander.
     """
     if len(result["data"]) != 1:
-        raise ValueError(f"une variable attendue, reçu {sorted(result['data'])}")
-    (variable, rows), = result["data"].items()
-    meta = next(m for m in result["meta"] if m["variable_en"] == variable)
+        raise ValueError(f"une fiche attendue, reçu {sorted(result['data'])}")
+    (card, rows), = result["data"].items()
+    by_variable = {}
+    for r in rows:
+        by_variable.setdefault(r.get("variable", card), []).append(r)
+    imposed = result.get("sampling")
+    variables = [_variable(m, by_variable[m["variable_en"]], imposed)
+                 for m in result["meta"] if m["variable_en"] in by_variable]
+
+    out = {
+        "card": card,
+        "variables": variables,
+        "omitted": result.get("stations_omitted", []),
+        "provenance": {k: v for k, v in result.items()
+                       if k not in _NOT_PROVENANCE},
+    }
+    if "stations_meta" in result:
+        out["positions"] = [
+            {"code": s["code_station"], "name": s.get("libelle_station"),
+             "lon": s.get("longitude_station"),
+             "lat": s.get("latitude_station")}
+            for s in result["stations_meta"]]
+    return out
+
+
+def _variable(meta, rows, imposed):
+    """Une variable : ses stations classées, sa barre de couleur, ses
+    compteurs et ses libellés."""
     relative = bool(meta.get("relative"))
     key = "a_relative" if relative else "a"
     palette = meta["palette"].split()
@@ -85,31 +113,18 @@ def for_page(result):
             "a": r.get("a"),
             "a_relative": r.get("a_relative") if relative else None,
         })
-
-    out = {
-        "variable": {
-            "id": variable,
-            "name": meta.get("name_fr"),
-            "relative": relative,
-            "units": _units(meta, relative),
-            "sampling": sampling_label(meta.get("sampling_period_fr")),
-            "digits": _digits(edges),
-            "palette": palette,
-            "edges": edges,
-        },
+    return {
+        "id": meta["variable_en"],
+        "name": meta.get("name_fr"),
+        "relative": relative,
+        "units": _units(meta, relative),
+        "sampling": year_label(meta, imposed),
+        "digits": _digits(edges),
+        "palette": palette,
+        "edges": edges,
         "stations": stations,
         "summary": summary(stations),
-        "omitted": result.get("stations_omitted", []),
-        "provenance": {k: v for k, v in result.items()
-                       if k not in _NOT_PROVENANCE},
     }
-    if "stations_meta" in result:
-        out["positions"] = [
-            {"code": s["code_station"], "name": s.get("libelle_station"),
-             "lon": s.get("longitude_station"),
-             "lat": s.get("latitude_station")}
-            for s in result["stations_meta"]]
-    return out
 
 
 def class_edges(slopes, n_classes):
@@ -147,18 +162,67 @@ def summary(stations):
     return {**count, "total": len(stations)}
 
 
-def sampling_label(window):
-    """`01-09, 31-08` (jour-mois, `sampling_period_fr` de la fiche)
-    devient `du 01 sept. au 31 août`. None si la fenêtre n'a pas cette
-    forme : la page n'en dit rien plutôt que de deviner."""
-    m = re.fullmatch(r"\s*(\d{2})-(\d{2})\s*,\s*(\d{2})-(\d{2})\s*",
-                     window or "")
+def year_label(meta, imposed=None):
+    """L'année de calcul d'une variable, en clair : « du 01 sept. au 31
+    août ». None si la fiche ne permet pas de le dire.
+
+    Une variable saisonnière garde sa fenêtre, fixée par la fiche
+    (`sampling_period_fr`, jour-mois : « du 01 mai au 30 nov. »). Une
+    variable annuelle commence au départ que le panneau impose (`imposed`,
+    mois-jour, le `sampling` rendu par card-api), sinon au départ fixe que
+    déclare la fiche (`preferred_sampling_period`, mois-jour) : c'est le
+    protocole MAKAHO, `sampling=preferred`. Sa fenêtre adaptative, que
+    `sampling_period_fr` décrit alors en mots, ne sert pas.
+    """
+    window = window_bounds(meta.get("sampling_period_fr"))
+    if window and _day_before(window[0]) != window[1]:
+        return _label(*window)
+    start = (_month_day(imposed)
+             or _month_day(meta.get("preferred_sampling_period"))
+             or (window[0] if window else None))
+    return _label(start, _day_before(start)) if start else None
+
+
+def window_bounds(text):
+    """`01-09, 31-08` ou `01-12, 28(29)-02` (jour-mois) : les deux bornes
+    en (jour, mois), ou None."""
+    found = re.findall(r"(\d{2})(?:\(\d{2}\))?-(\d{2})", text or "")
+    if len(found) != 2:
+        return None
+    bounds = [(int(d), int(m)) for d, m in found]
+    return tuple(bounds) if all(_valid(b) for b in bounds) else None
+
+
+def _month_day(text):
+    """`09-01` (mois-jour, comme `sampling`) en (jour, mois), ou None."""
+    m = re.fullmatch(r"(\d{2})-(\d{2})", text or "")
     if not m:
         return None
-    d1, m1, d2, m2 = m.groups()
-    if not (1 <= int(m1) <= 12 and 1 <= int(m2) <= 12):
-        return None
-    return f"du {d1} {_MONTHS[int(m1) - 1]} au {d2} {_MONTHS[int(m2) - 1]}"
+    bound = (int(m.group(2)), int(m.group(1)))
+    return bound if _valid(bound) else None
+
+
+def _valid(bound):
+    day, month = bound
+    try:
+        datetime.date(2001, month, day)
+    except ValueError:
+        return day == 29 and month == 2
+    return True
+
+
+def _day_before(bound):
+    """La veille, sur une année non bissextile : la fin d'une année qui
+    commence à `bound`."""
+    day, month = bound
+    d = datetime.date(2001, month, min(day, 28 if month == 2 else day))
+    d -= datetime.timedelta(days=1)
+    return (d.day, d.month)
+
+
+def _label(start, end):
+    (d1, m1), (d2, m2) = start, end
+    return f"du {d1:02d} {MONTHS[m1 - 1]} au {d2:02d} {MONTHS[m2 - 1]}"
 
 
 def unit_parts(unit):

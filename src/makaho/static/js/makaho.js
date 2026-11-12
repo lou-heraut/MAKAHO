@@ -1,10 +1,10 @@
 /* MAKAHO : la carte des tendances.
  *
  * Ce fichier ne calcule rien. Il dessine ce que le serveur prépare
- * (src/makaho/trends.py) : verdicts, classes de couleur, compteurs,
- * libellés, provenance. Les nombres viennent tous de card-api ; ici, on
- * ne fait que les écrire. La disposition est celle de MAKAHO 1.0.0
- * (dev/audits/2026-11-11_v1-interface.md).
+ * (src/makaho/trends.py, src/makaho/catalogue.py) : verdicts, classes de
+ * couleur, compteurs, libellés, menus, provenance. Les nombres viennent
+ * tous de card-api ; ici, on ne fait que les écrire. La disposition est
+ * celle de MAKAHO 1.0.0 (dev/audits/2026-11-11_v1-interface.md).
  *
  * Copyright 2026 Louis Héraut, INRAE, UR RiverLy. Licence
  * AGPL-3.0-or-later, voir le fichier LICENSE du dépôt.
@@ -49,12 +49,14 @@
   L.tileLayer(wmts("HYDROGRAPHY.HYDROGRAPHY"), {
     opacity: 0.45, minZoom: 8, maxZoom: 18,
   }).addTo(map);
+  const stationLayer = L.layerGroup().addTo(map);
 
   // ── Petits outils d'écriture ──────────────────────────────────────
   const $ = (id) => document.getElementById(id);
   const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 
-  /** Les noms viennent de Hub'Eau : jamais insérés tels quels. */
+  /** Les noms viennent de Hub'Eau et de card-api : jamais insérés tels
+   * quels. */
   function escape(text) {
     return String(text ?? "").replace(/[&<>"']/g, (c) => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
@@ -91,6 +93,19 @@
     return /^#[0-9a-fA-F]{3,8}$/.test(value || "") ? value : "#bbbbbb";
   }
 
+  /** Un bouton de choix, `on` s'il est pris. */
+  function choice(label, on, onClick, { title = "", disabled = false } = {}) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = on ? "choice on" : "choice";
+    b.innerHTML = label;
+    if (title) b.title = title;
+    b.disabled = disabled;
+    if (on) b.setAttribute("aria-pressed", "true");
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
   function status(text, isError = false) {
     const el = $("status");
     $("status-text").textContent = text;
@@ -98,11 +113,53 @@
     el.hidden = !text;
   }
 
-  // ── Les données ───────────────────────────────────────────────────
+  // ── L'état de l'analyse ───────────────────────────────────────────
+  // `wanted` est ce que le panneau demande ; `page`, la dernière réponse
+  // affichée. Ils diffèrent pendant un calcul, et tant qu'un curseur
+  // attend « Actualiser ».
+  let menus = null;              // /api/cards
+  let positions = null;          // code -> position, reçues une fois
+  let defaults = null;           // les réglages du service, lus dans la 1re réponse
+  let page = null;
+  let variableId = null;         // la variable affichée d'une fiche qui en a plusieurs
+  let regimeShown = null;        // le régime dont le panneau montre les fiches
+  let seasonShown = "year";
+  let seq = 0;                   // seule la réponse à la dernière demande s'affiche
+  const memo = new Map();        // les réponses de la visite, par réglages
+  const wanted = { card: null, start: null, end: null, sampling: "preferred", level: null };
 
-  /** La tendance pour la page, en suivant la file de calcul s'il le faut. */
-  async function load() {
-    let response = await fetch("api/trend?positions=1");
+  /** Ce que le catalogue dit d'une fiche. */
+  function cardInfo(id) {
+    for (const r of (menus ? menus.regimes : [])) {
+      const c = r.cards.find((x) => x.id === id);
+      if (c) return { regime: r.id, card: c };
+    }
+    return null;
+  }
+
+  /** Les réglages en paramètres de /api/trend. Ce qui vaut le défaut du
+   * service ne part pas : la demande retombe ainsi sur son cache. Une
+   * fin au bout du curseur ne part pas non plus : l'analyse suit alors
+   * la chronique jusqu'à ses dernières données. */
+  function query(withPositions) {
+    const q = new URLSearchParams();
+    if (wanted.card) q.set("card", wanted.card);
+    if (defaults) {
+      if (wanted.start !== defaults.start) q.set("start", wanted.start);
+      if (wanted.end !== null) q.set("end", wanted.end);
+      if (wanted.level !== defaults.level) q.set("level", wanted.level);
+    }
+    const info = cardInfo(wanted.card);
+    if (wanted.sampling !== "preferred" && info && info.card.preferred_month) {
+      q.set("sampling", wanted.sampling);
+    }
+    if (withPositions) q.set("positions", "1");
+    return q.toString();
+  }
+
+  /** Une tendance, en suivant la file de calcul s'il le faut. */
+  async function fetchTrend(qs) {
+    let response = await fetch(`api/trend?${qs}`);
     while (response.status === 202) {
       const pending = await response.json();
       const p = pending.progress;
@@ -126,6 +183,88 @@
     key: "MAKAHO n'a plus accès au service de calcul. Le problème est signalé.",
     job: "Le calcul demandé a échoué ou a expiré. Rechargez la page pour le relancer.",
   };
+
+  /** Lance l'analyse que le panneau demande, et l'affiche. Une réponse
+   * déjà reçue pendant la visite revient sans rien redemander. */
+  async function analyse() {
+    const mine = ++seq;
+    pending(false);
+    // La clé et la demande sont prises maintenant : le panneau peut
+    // changer pendant le calcul.
+    let key = defaults ? query(false) : null;
+    const qs = query(!positions);
+    let result = key && memo.get(key);
+    if (!result) {
+      document.body.classList.add("busy");
+      status("Calcul des tendances…");
+      try {
+        result = await fetchTrend(qs);
+      } catch (error) {
+        // La première demande joint les positions, que card-api lit chez
+        // Hub'Eau à chaque appel ; quand Hub'Eau traîne, toute la réponse
+        // tombe (signalé à card-api le 2026-11-12). Une seconde tentative,
+        // une seule : la tendance est alors déjà en cache chez lui.
+        if (!positions && error && error.error === "source") {
+          try {
+            await sleep(2000);
+            result = await fetchTrend(qs);
+          } catch (again) {
+            error = again;
+          }
+        }
+        if (!result) {
+          if (mine === seq) {
+            document.body.classList.remove("busy");
+            const known = error && MESSAGES[error.error];
+            status(known || "La carte n'a pas pu se charger. Réessayez dans un moment.", true);
+            if (!known) console.error(error);
+          }
+          return;
+        }
+      }
+      if (!defaults) {
+        firstResult(result);
+        key = query(false);
+      }
+      memo.set(key, result);
+    }
+    if (mine !== seq) return;
+    document.body.classList.remove("busy");
+    status("");
+    show(result);
+  }
+
+  /** La première réponse donne les positions et les réglages par défaut
+   * du service, que le panneau prend pour point de départ. */
+  function firstResult(result) {
+    positions = new Map((result.positions || []).map((p) => [p.code, p]));
+    const prov = result.provenance;
+    defaults = {
+      start: Number(String(prov.period.start).slice(0, 4)),
+      level: prov.level,
+    };
+    wanted.card = result.card;
+    wanted.start = defaults.start;
+    wanted.level = defaults.level;
+    drawInfo(prov);
+  }
+
+  function show(result) {
+    page = result;
+    if (!page.variables.some((v) => v.id === variableId)) {
+      variableId = page.variables[0].id;
+    }
+    draw();
+    drawPanel();
+  }
+
+  function draw() {
+    const v = page.variables.find((x) => x.id === variableId);
+    drawStations(v);
+    drawSummary(v, page.provenance);
+    drawColorbar(v);
+    drawCounts(v, page.omitted);
+  }
 
   // ── Les stations ──────────────────────────────────────────────────
 
@@ -155,11 +294,10 @@
       + "</tr></table>";
   }
 
-  function drawStations(page) {
-    const v = page.variable;
-    const where = new Map((page.positions || []).map((p) => [p.code, p]));
-    for (const s of page.stations) {
-      const pos = where.get(s.code);
+  function drawStations(v) {
+    stationLayer.clearLayers();
+    for (const s of v.stations) {
+      const pos = positions.get(s.code);
       if (!pos || pos.lat == null || pos.lon == null) continue;
       const { css, symbol } = look(s);
       const fill = s.class == null ? "#ffffff" : color(v.palette[s.class]);
@@ -175,21 +313,19 @@
         .bindTooltip(tooltip(s, pos, v, fill), {
           className: "station-tip", direction: "auto", offset: [8, 0],
         })
-        .addTo(map);
+        .addTo(stationLayer);
     }
   }
 
   // ── Les panneaux de droite ────────────────────────────────────────
 
-  function drawSummary(page) {
-    const v = page.variable, prov = page.provenance;
+  function drawSummary(v, prov) {
     $("card-id").textContent = v.id;
     $("card-name").textContent = v.name || "";
     $("card-sampling").innerHTML = v.sampling
       ? `Année hydrologique<br>${escape(v.sampling)}` : "";
     // La période demandée, comme le curseur de la 1.0.0. Sans fin
-    // demandée, l'analyse va jusqu'aux dernières données (M3 donnera la
-    // borne de fin, avec son curseur).
+    // demandée, l'analyse va jusqu'aux dernières données.
     const period = prov.period || {};
     const year = (date) => escape(String(date).slice(0, 4));
     $("card-period").innerHTML = period.start && period.end
@@ -236,15 +372,15 @@
     $("colorbar").hidden = false;
   }
 
-  function drawCounts(page) {
-    const s = page.summary;
+  function drawCounts(v, omitted) {
+    const s = v.summary;
     const lines = [
       `<span class="num">${s.total}</span> stations au total`,
       `∆ <span class="num">${s.up}</span> hausse${s.up > 1 ? "s" : ""} significative${s.up > 1 ? "s" : ""}`,
       `∇ <span class="num">${s.down}</span> baisse${s.down > 1 ? "s" : ""} significative${s.down > 1 ? "s" : ""}`,
     ];
-    if (page.omitted.length) {
-      lines.push(`<span class="num">${page.omitted.length}</span> écartée${page.omitted.length > 1 ? "s" : ""}, sans débits`);
+    if (omitted.length) {
+      lines.push(`<span class="num">${omitted.length}</span> écartée${omitted.length > 1 ? "s" : ""}, sans débits`);
     }
     $("counts").innerHTML = lines.map((l) => `<p>${l}</p>`).join("");
     $("counts").hidden = false;
@@ -255,15 +391,155 @@
   function drawInfo(prov) {
     const read = prov.data_fetched_at
       ? new Date(prov.data_fetched_at).toLocaleDateString("fr-FR") : null;
-    if (read) $("info-data").insertAdjacentHTML("beforeend", `, lus le <span class="num">${escape(read)}</span>`);
+    $("info-data").innerHTML = read ? `, lus le <span class="num">${escape(read)}</span>` : "";
     const versions = [];
     if (prov.api_version) versions.push(`<span class="num">${escape(prov.api_version)}</span>`);
     const deps = [["card", prov.card_version], ["stase", prov.stase_version]]
       .filter(([, ver]) => ver)
       .map(([name, ver]) => `${name} <span class="num">${escape(ver)}</span>`);
     if (deps.length) versions.push(`(${deps.join(", ")})`);
-    if (versions.length) $("info-compute").insertAdjacentHTML("beforeend", ` ${versions.join(" ")}`);
+    $("info-compute").innerHTML = versions.length ? ` ${versions.join(" ")}` : "";
   }
+
+  // ── Le panneau d'analyse ──────────────────────────────────────────
+
+  const monthInput = $("month"), startInput = $("start"), endInput = $("end");
+
+  /** Le panneau, d'après `wanted` et la réponse affichée. */
+  function drawPanel() {
+    if (!menus || !defaults) return;
+    const info = cardInfo(wanted.card);
+    if (!regimeShown) {
+      regimeShown = info ? info.regime : menus.regimes[0].id;
+      seasonShown = info ? info.card.season : "year";
+    }
+    const v = page && page.variables.find((x) => x.id === variableId);
+    $("analysis-title").innerHTML = v
+      ? `<span class="code">${escape(v.id)}</span> : ${escape(v.name || "")}` : "";
+
+    $("regimes").replaceChildren(...menus.regimes.map((r) => choice(
+      escape(r.label), r.id === regimeShown, () => {
+        regimeShown = r.id;
+        const own = info && info.regime === r.id;
+        seasonShown = own ? info.card.season : r.seasons[0].id;
+        drawPanel();
+      })));
+
+    const regime = menus.regimes.find((r) => r.id === regimeShown);
+    $("seasons").replaceChildren(...(regime.seasons.length > 1 ? regime.seasons : [])
+      .map((s) => choice(escape(s.label), s.id === seasonShown, () => {
+        seasonShown = s.id;
+        drawPanel();
+      })));
+    $("cards").replaceChildren(...regime.cards
+      .filter((c) => c.season === seasonShown)
+      .map((c) => choice(
+        escape(c.label) + (c.sub ? `<sub>${escape(c.sub)}</sub>` : ""),
+        c.id === wanted.card, () => {
+          if (c.id === wanted.card) return;
+          wanted.card = c.id;
+          analyse();
+          drawPanel();
+        }, { title: c.name || "" })));
+
+    // Les variables d'une fiche qui en a plusieurs (QMA, un mois par
+    // variable) : elles sont toutes dans la réponse, on passe de l'une à
+    // l'autre sans rien redemander.
+    const shownCard = page && cardInfo(page.card);
+    const many = shownCard && page.card === wanted.card && shownCard.card.variables;
+    $("variables").replaceChildren(...(many || []).map((x) => choice(
+      escape(x.label), x.id === variableId, () => {
+        variableId = x.id;
+        draw();
+        drawPanel();
+      }, { title: x.name || "" })));
+
+    // L'année hydrologique : le mois de départ, ou « Optimale », le
+    // départ fixe que déclare la fiche (protocole MAKAHO). Sans départ
+    // déclaré (une variable mensuelle), le réglage n'a pas d'objet.
+    const preferred = info && info.card.preferred_month;
+    const month = wanted.sampling === "preferred"
+      ? preferred : Number(wanted.sampling.slice(0, 2));
+    monthInput.disabled = !preferred;
+    if (month) monthInput.value = month;
+    drawMonthTicks(month);
+    const optimal = $("optimal");
+    optimal.className = wanted.sampling === "preferred" && preferred ? "choice on" : "choice";
+    optimal.disabled = !preferred;
+
+    drawPeriod();
+
+    $("levels").replaceChildren(...menus.levels.map((l) => choice(
+      `<span class="num">${num(l * 100, 0)}%</span>`, l === wanted.level, () => {
+        if (l === wanted.level) return;
+        wanted.level = l;
+        analyse();
+        drawPanel();
+      })));
+  }
+
+  function drawMonthTicks(month) {
+    $("month-ticks").innerHTML = menus.months.map((m, i) =>
+      `<span class="${i + 1 === month ? "on" : ""}">${escape(m)}</span>`).join("");
+  }
+
+  /** Le curseur de période : de la première année du curseur à l'année
+   * en cours ; une fin au bout du curseur suit les dernières données. */
+  function drawPeriod() {
+    const last = new Date().getFullYear();
+    for (const input of [startInput, endInput]) {
+      input.min = menus.period.first;
+      input.max = last;
+    }
+    startInput.value = wanted.start;
+    endInput.value = wanted.end ?? last;
+    $("period-values").innerHTML = `<span class="num">${escape(startInput.value)}</span>`
+      + ` - <span class="num">${escape(endInput.value)}</span>`;
+  }
+
+  /** Un curseur a bougé : rien ne part avant « Actualiser ». */
+  function pending(on) {
+    $("refresh").hidden = !on;
+  }
+
+  monthInput.addEventListener("input", () => {
+    const m = Number(monthInput.value);
+    wanted.sampling = `${String(m).padStart(2, "0")}-01`;
+    drawMonthTicks(m);
+    $("optimal").className = "choice";
+    pending(true);
+  });
+
+  $("optimal").addEventListener("click", () => {
+    if (wanted.sampling === "preferred") return;
+    wanted.sampling = "preferred";
+    analyse();
+    drawPanel();
+  });
+
+  // Le garde-fou des trente ans : les deux bornes restent à au moins
+  // `min_years` valeurs l'une de l'autre, la borne qu'on ne tient pas
+  // est poussée.
+  function periodInput(moved) {
+    const gap = menus.period.min_years - 1, last = new Date().getFullYear();
+    let start = Number(startInput.value), end = Number(endInput.value);
+    if (end - start < gap) {
+      if (moved === startInput) end = Math.min(last, start + gap);
+      else start = Math.max(menus.period.first, end - gap);
+      if (end - start < gap) {
+        if (moved === startInput) start = end - gap;
+        else end = start + gap;
+      }
+    }
+    wanted.start = start;
+    wanted.end = end >= last ? null : end;
+    drawPeriod();
+    pending(true);
+  }
+  startInput.addEventListener("input", () => periodInput(startInput));
+  endInput.addEventListener("input", () => periodInput(endInput));
+
+  $("refresh").addEventListener("click", analyse);
 
   // ── Les boutons ───────────────────────────────────────────────────
 
@@ -275,29 +551,35 @@
     recenter.hidden = home;
   });
 
-  const infoButton = $("info-button"), info = $("info");
-  infoButton.addEventListener("click", () => {
-    info.hidden = !info.hidden;
-    infoButton.setAttribute("aria-expanded", String(!info.hidden));
-  });
+  /** Un bouton qui ouvre et ferme son panneau ; la page porte la classe
+   * `<panneau>-open` tant qu'il est ouvert. */
+  function toggles(button, panel) {
+    button.addEventListener("click", () => {
+      panel.hidden = !panel.hidden;
+      button.setAttribute("aria-expanded", String(!panel.hidden));
+      document.body.classList.toggle(`${panel.id}-open`, !panel.hidden);
+    });
+  }
+  toggles($("info-button"), $("info"));
+  toggles($("analysis-button"), $("analysis"));
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !info.hidden) infoButton.click();
+    if (e.key !== "Escape") return;
+    for (const [button, panel] of [["info-button", "info"], ["analysis-button", "analysis"]]) {
+      if (!$(panel).hidden) $(button).click();
+    }
   });
 
   // ── Le chargement ─────────────────────────────────────────────────
+  // La carte et les menus partent ensemble : le catalogue de card-api
+  // met quelques secondes à venir, il ne retarde pas la carte.
 
-  load()
-    .then((page) => {
-      drawStations(page);
-      drawSummary(page);
-      drawColorbar(page.variable);
-      drawCounts(page);
-      drawInfo(page.provenance);
-      status("");
+  analyse();
+  fetch("api/cards")
+    .then((r) => (r.ok ? r.json() : Promise.reject(r)))
+    .then((body) => {
+      menus = body;
+      $("analysis-button").hidden = false;
+      drawPanel();
     })
-    .catch((error) => {
-      const known = error && MESSAGES[error.error];
-      status(known || "La carte n'a pas pu se charger. Réessayez dans un moment.", true);
-      if (!known) console.error(error);
-    });
+    .catch((error) => console.error("menus indisponibles", error));
 })();

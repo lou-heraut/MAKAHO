@@ -63,8 +63,59 @@ def test_la_tendance_part_sur_le_rrse_au_protocole_makaho(app, fake):
     assert sent["stations"] == ",".join(station_list())
     assert sent["sampling"] == "preferred"
     assert "stations_meta" not in sent
-    assert body["variable"]["id"] == "QA"
-    assert body["summary"]["down"] == 2
+    assert body["variables"][0]["id"] == "QA"
+    assert body["variables"][0]["summary"]["down"] == 2
+
+
+def test_les_reglages_du_panneau_partent_au_service(app, fake):
+    fake.on("GET", "/v1/trend", (200, trend_payload()))
+    app.test_client().get("/api/trend", query_string={
+        "card": "QA", "start": "1976", "end": "2020", "sampling": "01-01",
+        "level": "0.05"})
+    sent = fake.requests[0].url.params
+    assert (sent["start"], sent["end"]) == ("1976-01-01", "2020-12-31")
+    assert sent["sampling"] == "01-01"
+    assert sent["level"] == "0.05"
+
+
+def test_un_reglage_absent_reste_au_defaut_du_service(app, fake):
+    """Ce qui ne part pas retombe sur le cache de card-api : un `end`
+    explicite, même égal aux dernières données, se recalcule (mesuré le
+    2026-11-12)."""
+    fake.on("GET", "/v1/trend", (200, trend_payload()))
+    app.test_client().get("/api/trend?card=QA")
+    sent = fake.requests[0].url.params
+    for name in ("start", "end", "level", "mk"):
+        assert name not in sent
+
+
+@pytest.mark.parametrize("query", [
+    "start=1850", "start=3000", "start=19x8", "end=2026-01",
+    "start=2000&end=2010",                  # moins de trente ans
+    "sampling=09-15", "sampling=13-01", "sampling=adaptive",
+    "level=0.2", "level=abc",
+])
+def test_un_reglage_hors_du_panneau_ne_part_pas(app, fake, query):
+    """La demande part avec la clé de MAKAHO : rien d'autre que ce que le
+    panneau propose."""
+    response = app.test_client().get(f"/api/trend?card=QA&{query}")
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "invalid"
+    assert fake.requests == []
+
+
+def test_les_menus_viennent_du_catalogue(app, fake):
+    import json
+    from pathlib import Path
+
+    data = json.loads((Path(__file__).parent / "data" / "catalogue.json")
+                      .read_text(encoding="utf-8"))
+    fake.on("GET", "/v1/cards", (200, data["cards"]))
+    fake.on("GET", "/v1/vocabulary", (200, data["vocabulary"]))
+    body = app.test_client().get("/api/cards").get_json()
+    assert body["default"] == "QA"
+    assert [r["id"] for r in body["regimes"]] == [
+        "high-flows", "mean-flows", "low-flows", "baseflow"]
 
 
 def test_les_positions_se_demandent_une_fois(app, fake):
@@ -89,7 +140,7 @@ def test_un_job_se_suit_jusqu_a_la_page(app, fake):
     client = app.test_client()
     assert client.get("/api/jobs/abc123").status_code == 202
     body = client.get("/api/jobs/abc123").get_json()
-    assert body["summary"]["total"] == 2
+    assert body["variables"][0]["summary"]["total"] == 2
 
 
 def test_un_numero_de_job_douteux_ne_part_pas(app, fake):

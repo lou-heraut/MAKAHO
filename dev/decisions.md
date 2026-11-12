@@ -18,7 +18,11 @@ Arrêtées entre le 2026-09-18 et le 2026-11-11.
 2. **MAKAHO passe par card-api pour tout son contenu scientifique**,
    et reste **sans état** : il ne garde ni chronique, ni série agrégée.
    Raison : élégance, science ouverte, et un usage de référence qui
-   légitime le service.
+   légitime le service. **Précisé le 2026-11-12 par l'utilisateur** :
+   MAKAHO est une interface presque pure de card-api, un front qui en
+   montre l'utilité. Quand une information manque pour reproduire la
+   1.0.0 et qu'elle relève du service (ou des fiches), elle se demande
+   par un message déposé chez lui, que l'utilisateur lui transmet.
 3. **Repli connu si la mesure déçoit** : un instantané des séries dans
    MAKAHO, rafraîchi périodiquement, avec le test refait localement par
    stase. C'est pourquoi **un seul module de MAKAHO doit savoir d'où

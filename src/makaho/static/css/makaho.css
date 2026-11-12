@@ -254,6 +254,143 @@ body {
 }
 .tip-host:hover .tip, .tip-host:focus-visible .tip { visibility: visible; }
 
+/* ── Le panneau d'analyse ───────────────────────────────────────────── */
+
+/* Le bouton Analyse en bas à gauche, la pilule « Actualiser » à sa
+   droite quand un curseur attend, le panneau au-dessus du bouton : les
+   places et les couleurs de la 1.0.0. */
+.analysis-button {
+  left: var(--edge);
+  bottom: var(--edge);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  font-weight: 700;
+  font-size: 15px;
+}
+.analysis-button .icon { width: 1.1rem; height: 1.1rem; fill: currentColor; }
+
+.pill {
+  left: calc(var(--edge) + 120px);
+  bottom: var(--edge);
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(39, 86, 98, 0.95);
+  color: #d9d9d9;
+  font-size: 14px;
+}
+.pill:hover, .pill:focus-visible { background: rgb(39, 86, 98); color: #fff; }
+
+/* Ouvert, il passe devant tout ; sur un écran trop étroit pour qu'il
+   tienne à côté de la légende, la légende se retire le temps qu'il est
+   ouvert : rien ne se chevauche. */
+@media (max-width: 760px) { .analysis-open #legend { display: none; } }
+#analysis {
+  z-index: 1001;
+  left: var(--edge);
+  bottom: calc(var(--edge) + 42px);
+  width: min(29rem, calc(100vw - 2 * var(--edge)));
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  font-size: 15px;
+}
+.analysis-title { margin: 0.1rem 0 0.4rem; line-height: 1.25; }
+.analysis-title .code { font-weight: 700; }
+
+#analysis .row {
+  display: grid;
+  grid-template-columns: 7.4rem 1fr;
+  align-items: center;
+  padding: 0.2rem 0;
+}
+#analysis .label { font-weight: 700; line-height: 1.15; padding-right: 0.4rem; }
+#analysis .choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1rem 0.15rem;
+  min-height: 1.6rem;
+  padding-left: 0.35rem;
+  border-left: 2px solid var(--rule);
+}
+#analysis .choices.stack { flex-direction: column; flex-wrap: nowrap; }
+#analysis .line { display: flex; flex-wrap: wrap; gap: 0.1rem 0.15rem; }
+#analysis .line:empty { display: none; }
+#analysis .line.sub { padding-top: 0.15rem; border-top: 1px solid var(--rule); }
+
+/* Un choix : gris, blanc au survol ; turquoise sur gris quand il est
+   pris (jetons de la 1.0.0). */
+.choice {
+  font: inherit;
+  border: 0;
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.3rem;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.choice:hover, .choice:focus-visible { color: #fff; }
+.choice.on { color: #66c1bf; background: #474747; }
+.choice:disabled { cursor: default; color: #5c5f61; background: transparent; }
+.choice sub { font-size: 0.7em; }
+.line.sub .choice { font-size: 13.5px; }
+
+/* Les curseurs : un trait gris, un rond gris. Le curseur double est fait
+   de deux curseurs superposés, dont seuls les ronds se saisissent. */
+.slider { position: relative; height: 20px; margin: 0.15rem 0.3rem 0; }
+.slider input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.slider.double input { pointer-events: none; }
+.slider input::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: #5c5f61; }
+.slider input::-moz-range-track { height: 4px; border-radius: 2px; background: #5c5f61; }
+.slider.double input + input::-webkit-slider-runnable-track { background: transparent; }
+.slider.double input + input::-moz-range-track { background: transparent; }
+.slider input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  pointer-events: auto;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border: 0;
+  border-radius: 50%;
+  background: #a0a0a0;
+  cursor: pointer;
+}
+.slider input::-moz-range-thumb {
+  pointer-events: auto;
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 50%;
+  background: #a0a0a0;
+  cursor: pointer;
+}
+.slider input:focus-visible::-webkit-slider-thumb { outline: 2px solid #66c1bf; }
+.slider input:focus-visible::-moz-range-thumb { outline: 2px solid #66c1bf; }
+.slider input:disabled::-webkit-slider-thumb { background: #5c5f61; cursor: default; }
+.slider input:disabled::-moz-range-thumb { background: #5c5f61; cursor: default; }
+
+.ticks {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0.1rem;
+  font-size: 9px;
+  color: var(--muted);
+}
+.ticks .on { color: #66c1bf; font-weight: 700; }
+#period-values { justify-content: center; font-size: 13px; color: var(--on-dark); }
+
+/* Pendant un calcul, la carte précédente reste, atténuée. */
+.busy .leaflet-marker-pane { opacity: 0.35; transition: opacity 0.2s; }
+
 /* ── Les stations ───────────────────────────────────────────────────── */
 
 /* Seul le symbole réagit, pas sa boîte : là où les stations se

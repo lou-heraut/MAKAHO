@@ -18,6 +18,17 @@ Chaque entrée dit ce qui a changé et renvoie au document qui l'explique.
 
 ### Ajouté
 
+- **Le panneau d'analyse (M3, en cours, 2026-11-12)**, sur celui de la
+  1.0.0 : le bouton Analyse en bas à gauche, le régime, la variable
+  (Année, Été, Hiver ; les mois de QMA et les saisons de QSA), l'année
+  hydrologique (« Optimale » ou un mois de départ), la période avec le
+  garde-fou des trente ans, la significativité. Les menus viennent du
+  catalogue de card-api (`src/makaho/catalogue.py`, `/api/cards`). Un
+  clic calcule aussitôt, un curseur attend « Actualiser » ; la page
+  garde les réponses de la visite et passe d'un mois de QMA à l'autre
+  sans redemander. MAKAHO vérifie chaque réglage avant de l'envoyer
+  avec sa clé. Reste la sélection de stations. Mesures et décisions :
+  `dev/plans/2026-11-12_m3-analysis.md`.
 - **La carte des tendances (M2, reprise les 2026-11-11 et 12)**, sur
   l'interface de la 1.0.0 en ligne
   (`dev/audits/2026-11-11_v1-interface.md`) : la carte plein écran au

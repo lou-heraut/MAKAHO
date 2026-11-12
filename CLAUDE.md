@@ -58,6 +58,9 @@ dans les documents partent de la racine du dépôt.
                     un code par ligne, la source en lignes # en tête.
     trends.py       ce que la page affiche (classes, compteurs, libellés,
                     provenance), calculé ici ; le JavaScript ne calcule rien.
+    catalogue.py    les menus du panneau d'analyse, tirés des facettes du
+                    catalogue de card-api : aucune liste de fiches écrite
+                    dans MAKAHO, aucun groupe deviné sur les noms.
     static/         css/, js/, vendor/ (Leaflet et les polices copiés,
                     sans CDN : voir son README). templates/index.html
                     porte le sprite des marqueurs, templates/icons/ le
@@ -115,7 +118,9 @@ Détaillées avec leur raison dans `dev/decisions.md`. En bref :
 1. **On sort de Shiny pour son modèle de concurrence**, pas parce que le
    calcul est lourd.
 2. **MAKAHO reste sans état** et prend tout son contenu scientifique de
-   card-api.
+   card-api. C'est une interface presque pure de card-api, et sa
+   vitrine : ce qui manque pour reproduire la 1.0.0 et relève du service
+   se demande chez lui, en message, plutôt que de se contourner ici.
 3. **Repli connu** si la mesure déçoit : un instantané des séries dans
    MAKAHO, test refait par stase. D'où : **un seul module doit savoir
    d'où viennent les séries.**
