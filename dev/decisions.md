@@ -79,7 +79,10 @@ Arrêtées entre le 2026-09-18 et le 2026-11-11.
    figure de card-api sans regarder l'application, a été refusée parce
    qu'elle s'en éloignait trop. Le code reste neuf ; l'allure se
    reprend. Le CSS de la 1.0.0, propre à Shiny, sert de référence et non
-   de vérité. Le détail : `ROADMAP.md`, M2.
+   de vérité : seul son `www/ui.css` se lit, dans ce but (confirmé le
+   2026-11-11). Les améliorations se proposent une à une, une fois la
+   page proche de la 1.0.0, pas avant. Le relevé de l'interface en
+   ligne : `dev/audits/2026-11-11_v1-interface.md`.
 10. **Leaflet et un fond de carte complet, pas une carte dessinée en
     SVG** (2026-11-11, voulu par l'utilisateur). MAKAHO montre des
     observations de terrain : il faut pouvoir situer une station sur

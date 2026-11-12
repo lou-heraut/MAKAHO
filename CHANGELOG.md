@@ -18,7 +18,8 @@ Chaque entrée dit ce qui a changé et renvoie au document qui l'explique.
 
 ### Ajouté
 
-- **La carte des tendances (M2, reprise les 2026-11-11 et 12)**, sur
+- **La carte des tendances (M2, reprise les 2026-11-11 et 12, validée
+  pour l'instant par l'utilisateur le 2026-11-12)**, sur
   l'interface de la 1.0.0 en ligne
   (`dev/audits/2026-11-11_v1-interface.md`) : la carte plein écran au
   cadrage de la 1.0.0, sans boutons de zoom, et un bouton pour

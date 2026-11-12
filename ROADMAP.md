@@ -8,7 +8,7 @@
 > propositions, que l'implémentation peut remplacer par mieux
 > (décision 9). Pas de calendrier : l'ordre suit les dépendances.
 
-# Feuille de route de MAKAHO (mise à jour 2026-11-11)
+# Feuille de route de MAKAHO (mise à jour 2026-11-12)
 
 La réécriture de l'application R Shiny (tag `v1.0.0`) en Flask sur
 card-api, publiée en 2.0.0 à la bascule (M10).
@@ -76,31 +76,30 @@ Le client a tourné sur le contrat de card-api le 2026-11-11, avec la
 clé : c'est ce que card-api attendait pour passer en 1.0.0 (son
 `dev/decisions.md`). Ce qui gênait est dans le message déposé chez lui.
 
-## M2. La carte, reprise
+## M2. La carte
 
-La page reprise sur l'interface de la 1.0.0 en ligne
-(`dev/audits/2026-11-11_v1-interface.md`) est sur la bonne voie, dit
-l'utilisateur le 2026-11-12 (`CHANGELOG.md`). Reste la revue, puis la
-vérifier sur le service en ligne, ce qui demande la clé. Étapes,
-décisions et questions : `dev/plans/2026-11-11_m2-map.md`. La
-superficie et l'altitude de l'infobulle attendent card-api (point 8 du
-message déposé chez lui).
+La carte des tendances de QA sur le RRSE, sur l'interface de la 1.0.0
+en ligne (décision 9). Fait (`CHANGELOG.md`, et le détail dans
+`dev/plans/2026-11-11_m2-map.md`), validé pour l'instant par
+l'utilisateur le 2026-11-12, sauf :
 
-Ce que l'utilisateur attend (2026-11-11) :
-
-- **La cible est MAKAHO 1.0.0 tel qu'il est en ligne** : sa disposition,
-  ses panneaux, sa légende, ses marqueurs, ses interactions et tout ce
-  qu'il donne à lire, sur le fond déjà choisi (décision 10).
-- **earth.nullschool.net reste l'inspiration derrière**, une autre porte
-  de créativité : le CSS de la 1.0.0 avait été construit dans son
-  esprit, et cet esprit se garde.
-- **Le CSS de la 1.0.0 n'est pas une vérité** : il était propre à Shiny.
-  Il sert de référence pour l'allure, pas de modèle à recopier : seul
-  `www/ui.css` est lu, dans ce but (confirmé le 2026-11-11).
-- **Les améliorations viendront après**, proposées une à une, une fois
-  la page proche de la 1.0.0 : pas avant.
+- **Les panneaux de droite se chevauchent** dans une fenêtre peu haute :
+  le résumé et la barre de couleur ont des positions fixes, et se
+  rencontrent sous 670 px de haut environ (estimé d'après le CSS). Vu
+  par l'utilisateur le 2026-11-12, accepté pour l'instant.
+- **La superficie et l'altitude** manquent à l'infobulle : card-api ne
+  les sert pas (point 8 du message déposé chez lui).
+- **L'histogramme et la pente médiane** du premier essai, retirés pour
+  converger, sont à reproposer un à un (objectifs : un peu plus de
+  statistique, courte).
 
 ## M3. Le panneau d'analyse
+
+Ce qui fait choisir son calcul : la fiche, le jeu de stations, la
+période, le départ d'année, le risque. La cible, comme pour la carte,
+est le panneau Analyse de la 1.0.0 en ligne, réécrit et non recopié
+(décision 9) : relevé dans `dev/audits/2026-11-11_v1-interface.md`
+(« Le panneau Analyse »).
 
 - **Les menus sont construits depuis `/v1/cards` et `/v1/vocabulary`.**
   La facette `phenomenon` donne les quatre régimes aux mêmes effectifs ;
@@ -124,7 +123,8 @@ Ce que l'utilisateur attend (2026-11-11) :
   court délai sans mouvement, peut suffire pour les fiches rapides. Pour
   les fiches d'étiage, chaque relâchement lancerait un calcul long, et
   une requête abandonnée par la page continue de calculer côté service.
-  Remesurer les coûts depuis la production au moment de M3.
+  Un job, lui, s'abandonne (`CardClient.cancel_job`) ; la page ne s'en
+  sert pas encore. Remesurer les coûts depuis la production au moment de M3.
 - Une fiche par appel pour la vue complète (`dev/decisions.md`).
 
 ## M4. Le graphique par station
