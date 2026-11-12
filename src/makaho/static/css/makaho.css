@@ -101,8 +101,29 @@ body {
   padding: 10px;
 }
 
+/* Les panneaux de droite, en colonne : le résumé en haut, la barre de
+   couleur et les compteurs en bas, aux places de la 1.0.0 dans une
+   fenêtre assez haute. Plus bas, ils se rapprochent, puis la barre
+   rétrécit : ils ne se chevauchent jamais. Les 100 px du haut laissent
+   la place aux boutons de téléchargement (M6), les 90 px du bas au logo
+   et à l'aide. */
+#legend {
+  position: fixed;
+  z-index: 1000;
+  right: 0;
+  top: 100px;
+  bottom: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none;
+}
+#legend > .panel { position: static; flex: none; pointer-events: auto; }
+/* Une fenêtre peu haute : le résumé monte sous les boutons du haut. */
+@media (max-height: 700px) { #legend { top: 52px; } }
+
 /* Le résumé : ce que montre la carte. */
-#summary { top: 100px; max-width: min(15rem, calc(100vw - 4rem)); }
+#summary { margin-bottom: 12px; max-width: min(15rem, calc(100vw - 4rem)); }
 #summary h1 {
   margin: 0;
   font: 700 18px/1.1 var(--title);
@@ -119,14 +140,20 @@ body {
 }
 
 /* La barre de couleur : verticale, les classes ouvertes en pointe. */
-#colorbar { bottom: 170px; padding: 8px 6px 8px 8px; }
-#colorbar svg { display: block; }
+#legend > #colorbar {
+  flex: 0 1 auto;
+  min-height: 0;
+  margin: auto 0 17px;
+  padding: 8px 6px 8px 8px;
+}
+/* À la hauteur que lui laisse la colonne, 262 px au plus ; sa largeur
+   suit, et le dessin avec. */
+#colorbar svg { display: block; height: 100%; max-height: 262px; width: auto; }
 #colorbar .title { font: 700 12.5px var(--title); fill: #808080; letter-spacing: 0.02em; }
 #colorbar .unit { font: 500 12px var(--text); fill: #808080; }
 #colorbar .tick { font: 500 11.5px var(--mono); fill: #555; }
 
 /* Les compteurs. */
-#counts { bottom: 90px; }
 #counts p { margin: 0; font-size: 12.8px; line-height: 1.12; font-weight: 500; color: var(--counts); }
 #counts .num { font-weight: 700; }
 

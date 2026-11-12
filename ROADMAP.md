@@ -34,7 +34,7 @@ qui est abandonné l'est en connaissance de cause, dans
   de ne pas réintroduire de lenteur (M3, M8).
 - **Changer de jeu de stations simplement.** card-api sert n'importe
   quelle station Hub'Eau ; la liste reste une donnée de MAKAHO, le RRSE
-  par défaut (M3).
+  par défaut. Plus tard : le RRSE seul pour l'instant (2026-11-12).
 - **L'export de données reste la porte des usages experts** : ce qui
   permet à chacun de refaire les analyses qu'il souhaite. À pousser et
   à vérifier (M6).
@@ -80,13 +80,9 @@ clé : c'est ce que card-api attendait pour passer en 1.0.0 (son
 
 La carte des tendances de QA sur le RRSE, sur l'interface de la 1.0.0
 en ligne (décision 9). Fait (`CHANGELOG.md`, et le détail dans
-`dev/plans/2026-11-11_m2-map.md`), validé pour l'instant par
-l'utilisateur le 2026-11-12, sauf :
+`dev/plans/2026-11-11_m2-map.md`), regardé par l'utilisateur le
+2026-11-12 (« déjà beaucoup mieux »), sauf :
 
-- **Les panneaux de droite se chevauchent** dans une fenêtre peu haute :
-  le résumé et la barre de couleur ont des positions fixes, et se
-  rencontrent sous 670 px de haut environ (estimé d'après le CSS). Vu
-  par l'utilisateur le 2026-11-12, accepté pour l'instant.
 - **La superficie et l'altitude** manquent à l'infobulle : card-api ne
   les sert pas (point 8 du message déposé chez lui).
 - **L'histogramme et la pente médiane** du premier essai, retirés pour
@@ -95,37 +91,16 @@ l'utilisateur le 2026-11-12, sauf :
 
 ## M3. Le panneau d'analyse
 
-Ce qui fait choisir son calcul : la fiche, le jeu de stations, la
-période, le départ d'année, le risque. La cible, comme pour la carte,
-est le panneau Analyse de la 1.0.0 en ligne, réécrit et non recopié
-(décision 9) : relevé dans `dev/audits/2026-11-11_v1-interface.md`
-(« Le panneau Analyse »).
+Ce qui fait choisir son calcul : le régime, la variable, la période, le
+départ de l'année hydrologique, le risque, la sélection de stations.
+La cible, comme pour la carte, est le panneau Analyse de la 1.0.0 en
+ligne, réécrit et non recopié (décision 9). En cours : étapes, mesures
+et décisions dans `dev/plans/2026-11-12_m3-analysis.md`.
 
-- **Les menus sont construits depuis `/v1/cards` et `/v1/vocabulary`.**
-  La facette `phenomenon` donne les quatre régimes aux mêmes effectifs ;
-  le regroupement des familles paramétrées se déduit des facettes au
-  lieu d'être deviné par expression régulière sur des noms de fichiers.
-- **Le jeu de stations** : le RRSE par défaut, et de quoi en changer
-  simplement (objectifs). Sa forme est à proposer : listes fournies par
-  MAKAHO, liste déposée par l'usager, ou les deux.
-- Les cinq modes de sélection : tout, aucun, clic, polygone additif et
-  soustractif, recherche par nom.
-- Le curseur de période d'analyse, **avec le garde-fou des 30 ans**.
-  Changer la période fait recalculer toutes les séries, changer alpha ne
-  relance que le test (`dev/decisions.md`, ce que card-api impose).
-- Le curseur de départ d'année, `preferred` par défaut. **Pas de mode
-  échantillon** (décision 4).
-- Le risque alpha, et l'hypothèse `INDE` / `AR1` / `LTP` que le service
-  offre et que l'actuel fixe en dur. À exposer ou non : arbitrage
-  d'interface.
-- **Quand partent les requêtes : à trancher sur mesure.** L'actuel a un
-  bouton « Actualiser ». Envoyer au relâchement du curseur, ou après un
-  court délai sans mouvement, peut suffire pour les fiches rapides. Pour
-  les fiches d'étiage, chaque relâchement lancerait un calcul long, et
-  une requête abandonnée par la page continue de calculer côté service.
-  Un job, lui, s'abandonne (`CardClient.cancel_job`) ; la page ne s'en
-  sert pas encore. Remesurer les coûts depuis la production au moment de M3.
-- Une fiche par appel pour la vue complète (`dev/decisions.md`).
+Ce que card-api doit régler pour que la page soit fluide (mesures du
+2026-11-12, `message-makaho_2026-11-12.md` déposé à sa racine) : un
+plancher de 2.3 s par tendance même tout en cache, et la page qui tombe
+quand Hub'Eau traîne à rendre les positions des stations.
 
 ## M4. Le graphique par station
 

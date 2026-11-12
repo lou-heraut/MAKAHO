@@ -17,7 +17,10 @@
   // écran large), sans boutons de zoom : la molette, le pincement, et le
   // bouton de recentrage quand la carte a bougé. Le zoom est le plus fort
   // qui montre la France entière : 6 sur un écran large, 5 sur un
-  // téléphone, comme la 1.0.0.
+  // téléphone, comme la 1.0.0. Par niveaux entiers : entre deux, Leaflet
+  // agrandit les tuiles et la carte est floue (essayé le 2026-11-12). Le
+  // zoom 12 suffit pour situer une station sur sa rivière ; au-delà, le
+  // fond n'apporte plus rien (2026-11-12, voulu par l'utilisateur).
   const HOME_CENTER = [46.795, 2.509];
   const FRANCE = [[41.3, -5.2], [51.1, 9.6]];
 
@@ -31,7 +34,7 @@
   const wmts = (layer, style) => `${WMTS}&LAYER=${layer}&STYLE=${style || "normal"}`;
   const IGN = '<a href="https://cartes.gouv.fr/">IGN, Géoplateforme</a>';
 
-  const map = L.map("map", { zoomControl: false, minZoom: 5, maxZoom: 14 });
+  const map = L.map("map", { zoomControl: false, minZoom: 5, maxZoom: 12 });
   const homeZoom = () => Math.min(6, map.getBoundsZoom(FRANCE));
   const goHome = () => map.setView(HOME_CENTER, homeZoom());
   goHome();

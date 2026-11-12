@@ -18,17 +18,17 @@ Chaque entrée dit ce qui a changé et renvoie au document qui l'explique.
 
 ### Ajouté
 
-- **La carte des tendances (M2, reprise les 2026-11-11 et 12, validée
-  pour l'instant par l'utilisateur le 2026-11-12)**, sur
+- **La carte des tendances (M2, reprise les 2026-11-11 et 12)**, sur
   l'interface de la 1.0.0 en ligne
   (`dev/audits/2026-11-11_v1-interface.md`) : la carte plein écran au
-  cadrage de la 1.0.0, sans boutons de zoom, et un bouton pour
-  recentrer ; les symboles de la 1.0.0 (triangle pour une tendance
+  cadrage de la 1.0.0, sans boutons de zoom, jusqu'au zoom 12, et un
+  bouton pour recentrer ; les symboles de la 1.0.0 (triangle pour une tendance
   significative, rond sinon, rond cerclé de jaune pour une chronique de
   moins de trente ans), aux contours un peu plus foncés pour le fond
   IGN ; l'infobulle de station (code, nom, pentes absolue et relative,
   position) ; à droite, le résumé de la fiche avec son année
-  hydrologique, la barre de couleur verticale et les compteurs ; sous le
+  hydrologique, la barre de couleur verticale et les compteurs, en
+  colonne, sans chevauchement dans une fenêtre peu haute ; sous le
   logo INRAE, le panneau d'information, qui porte la provenance. Polices
   Raleway, Inter et Roboto Mono, servies par MAKAHO, et le point
   décimal partout (décision 11). Les données viennent de card-api pour
